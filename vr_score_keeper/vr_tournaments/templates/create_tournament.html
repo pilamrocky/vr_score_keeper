@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="is-size-3 mb-4">New Tournament</h1>
+<form method="post" action="/create_tournament/" class="box">
+    {% csrf_token %}
+    {% if form.errors %}
+    <div class="notification is-danger">
+        <ul>
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    <div class="field">
+        <label class="label">Tournament Name</label>
+        <div class="control">
+            {{ form.name }}
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">Date</label>
+        <div class="control">
+            {{ form.date }}
+        </div>
+    </div>
+    <button class="button is-primary" type="submit">Create Tournament</button>
+</form>
+{% endblock %}

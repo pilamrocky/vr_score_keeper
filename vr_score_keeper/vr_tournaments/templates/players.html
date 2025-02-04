@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <section class="section">
-        <div class="container">
-            <h1 class="title">Players</h1>
+            <h1 class="is-size-3 mb-4">Players</h1>
             <form method="post" class="box">
                 {% csrf_token %}
                 {% if form.errors %}
@@ -23,7 +21,7 @@
                         {{ form.name }}
                     </div>
                 </div>
-                <button class="button is-primary" type="submit">Add Player</button>
+                <button class="button is-primary is-outlined is-dark" type="submit">Add Player</button>
             </form>
             <table class="table is-fullwidth">
                 <thead>
@@ -36,11 +34,9 @@
                     {% for player in players %}
                         <tr>
                             <td>{{ player.name }}</td>
-                            <td><a href="{% url 'delete_player' pk=player.id %}" class="button is-danger">Delete</a></td>
+                            <td><a href="{% url 'delete_player' pk=player.id %}" class="button is-danger is-outlined is-dark is-small">Delete</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
-    </section>
 {% endblock %}

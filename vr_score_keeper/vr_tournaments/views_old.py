@@ -1,25 +1,27 @@
-from django.db.models import Sum
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from .models import Tournament, Player, Match, Score
 from .forms import TournamentForm, PlayerForm, MatchForm, ScoreForm
 
 
 def index(request):
-    previous_tournaments = Tournament.objects.order_by("-date")[1:]
+    tournaments = Tournament.objects.all()
     latest_tournament = Tournament.objects.order_by("-date").first()
-    player_scores = []
-    if latest_tournament and hasattr(latest_tournament, "player_set"):
-        tournament_players = latest_tournament.player_set.all()
-        for player in tournament_players:
+    if latest_tournament:
+        players = latest_tournament.player_set.all()
+        player_scores = []
+        for player in players:
             score = player.score_set.filter(tournament=latest_tournament).aggregate(
                 total_score=Sum("score")
             )["total_score"]
             player_scores.append((player, score))
+    else:
+        player_scores = []
     return render(
         request,
         "index.html",
         {
-            "tournaments": previous_tournaments,
+            "tournaments": tournaments,
             "latest_tournament": latest_tournament,
             "player_scores": player_scores,
         },
@@ -40,11 +42,11 @@ def players(request):
     return render(request, "players.html", {"players": current_players, "form": form})
 
 
-def tournaments(request):
-    all_tournaments = Tournament.objects.all().order_by("-date")
+def tournament_list(request):
+    tournaments = Tournament.objects.all()
     form = TournamentForm()
     return render(
-        request, "tournaments.html", {"tournaments": all_tournaments, "form": form}
+        request, "tournament_list.html", {"tournaments": tournaments, "form": form}
     )
 
 
@@ -53,15 +55,46 @@ def tournament_detail(request, pk):
     return render(request, "tournament_detail.html", {"tournament": tournament})
 
 
+def player_list(request):
+    players = Player.objects.all()
+    return render(request, "player_list.html", {"players": players})
+
+
+def player_detail(request, pk):
+    player = Player.objects.get(pk=pk)
+    return render(request, "player_detail.html", {"player": player})
+
+
+def match_list(request):
+    matches = Match.objects.all()
+    return render(request, "match_list.html", {"matches": matches})
+
+
+def match_detail(request, pk):
+    match = Match.objects.get(pk=pk)
+    return render(request, "match_detail.html", {"match": match})
+
+
+def score_list(request):
+    scores = Score.objects.all()
+    return render(request, "score_list.html", {"scores": scores})
+
+
+def score_detail(request, pk):
+    score = Score.objects.get(pk=pk)
+    return render(request, "score_detail.html", {"score": score})
+
+
 def create_tournament(request):
     if request.method == "POST":
         form = TournamentForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("tournaments")
-    else:
-        form = TournamentForm()
-    return render(request, "create_tournament.html", {"form": form})
+            return redirect("tournament_list")
+        else:
+            return render(request, "tournament_list.html", {"form": form})
+    form = TournamentForm()
+    return render(request, "tournament_list.html", {"form": form})
 
 
 def create_player(request):
@@ -148,7 +181,7 @@ def update_score(request, pk):
 def delete_tournament(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     tournament.delete()
-    return redirect("tournaments")
+    return redirect("tournament_list")
 
 
 def delete_player(request, pk):

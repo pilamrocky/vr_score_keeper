@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+            <h1 class="is-size-3 mb-4">Tournaments</h1>
+            
+            <a href="{% url 'create_tournament' %}" class="button is-primary is-outlined isdark mb-5"> Create Tournament</a>
+
+            {% for tournament in tournaments %}
+            <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title">{{ tournament.name }}</p>
+                  <p class="card-header-title is-pulled-right">{{ tournament.date }}</p>
+                    
+                </header>
+                <div class="card-content pt-1">
+                  <div class="content">
+                    <p class="has-text-weight-bold is-uppercase">Winner: Rocky</p>
+                    List of other scores
+                  </div>
+                </div>
+                <footer class="card-footer">
+                  <a href="{% url 'tournament_detail' pk=tournament.pk %}" class="card-footer-item">Details</a>
+                  <!--<a href="{% url 'delete_tournament' pk=tournament.pk %}" class="card-footer-item">Delete</a>-->
+                </footer>
+            </div>
+            {% endfor %}
+{% endblock %}
