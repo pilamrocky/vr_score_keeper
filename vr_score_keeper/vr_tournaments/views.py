@@ -48,6 +48,36 @@ def tournaments(request):
     )
 
 
+def tournament_registration(request, pk):
+    tournament = Tournament.objects.get(pk=pk)
+    all_players = Player.objects.all()
+    registered_players = []
+    if hasattr(tournament, "players"):
+        registered_players = tournament.players.all()
+
+    if request.method == "POST":
+        player_id = request.POST.get("player_id")
+        action = request.POST.get("action")
+        player = Player.objects.get(pk=player_id)
+
+        if action == "add":
+            player.tournaments.add(tournament)
+        elif action == "remove":
+            player.tournaments.remove(tournament)
+
+        return redirect("tournament_registration", pk=pk)
+
+    return render(
+        request,
+        "tournament_registration.html",
+        {
+            "tournament": tournament,
+            "all_players": all_players,
+            "registered_players": registered_players,
+        },
+    )
+
+
 def tournament_detail(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     return render(request, "tournament_detail.html", {"tournament": tournament})
@@ -58,7 +88,7 @@ def create_tournament(request):
         form = TournamentForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("tournaments")
+            return redirect("tournament_registration", pk=form.instance.pk)
     else:
         form = TournamentForm()
     return render(request, "create_tournament.html", {"form": form})

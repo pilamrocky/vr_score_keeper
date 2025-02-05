@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="is-size-3 mb-4">{{ tournament.name }}</h1>
+    <h2 class="is-size-4">Registered Players:</h2>
+    <table class="table is-fullwidth">
+        <thead>
+            <th>Player</th>
+            <th>Action</th>
+        </thead>
+        <tbody>
+            {% for player in registered_players %}
+            <tr>
+            <td>{{ player.name }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="player_id" value="{{ player.id }}">
+                    <input type="hidden" name="action" value="remove">
+                    <button class="button is-danger is-outlined" type="submit">Remove</button>
+                </form>
+            </td>
+            {% endfor %}
+        </tr>
+        </tbody>
+    </table>
+
+    <h2 class="is-size-4">Available Players:</h2>
+        <table class="table is-fullwidth">
+            <thead>
+                <th>Player</th>
+                <th>Action</th>
+            </thead>
+            <tbody>
+                {% for player in all_players %}
+                {% if player not in registered_players %}
+                <tr>
+                <td>{{ player.name }}</td>
+                <td>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="player_id" value="{{ player.id }}">
+                        <input type="hidden" name="action" value="add">
+                        <button class="button is-primary is-outlined" type="submit">Register</button>
+                    </form>
+                {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+
+
+{% endblock %}
