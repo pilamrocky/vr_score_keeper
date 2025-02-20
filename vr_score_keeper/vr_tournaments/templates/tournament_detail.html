@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="title">{{ tournament.name }}</div>
+    <div class="subtitle">{{ tournament.date }}</div>
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">Matches</p>
+            <p class="card-header-title is-pulled-right">
+                <a href="{% url 'create_match' tournament.pk %}" class="button is-small">New Match</a>
+            </p>
+
+        </header>
+        <div class="card-content py-1">
+            <table class="table is-fullwidth">
+                <thead>
+                    <th class="is-size-7">Date</th>
+                    {% for player in registered_players %}<th class="is-size-7">{{ player }}</th>{% endfor %}
+                </thead>
+                <tbody>
+                    {% for match in matches %}
+                        <tr>
+                            <td>{{ match.date|date:"m/d/y" }}</td>
+                            {% for player in registered_players %}
+                                {% for score in match.scores.all %}
+                                    {% if score.player == player %}<td>{{ score.score }}</td>{% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">Registered</p>
+            <p class="card-header-title is-pulled-right">
+                <a href="{% url 'tournament_registration' tournament.pk %}"
+                   class="button is-small">Register Players</a>
+            </p>
+
+        </header>
+        <div class="card-content py-1">
+            <table class="table is-fullwidth">
+                <thead>
+                    <th>Player</th>
+                </thead>
+                <tbody>
+                    {% for player in registered_players %}
+                        <tr>
+                            <td>{{ player.name }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a href="{% url 'delete_tournament' tournament.pk %}"
+       class="button is-danger is-outlined">DELETE</a>
+{% endblock content %}

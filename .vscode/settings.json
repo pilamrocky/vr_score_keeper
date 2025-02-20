@@ -1,0 +1,10 @@
+{
+    "editor.formatOnSave": true,
+    "html.format.indentInnerHtml": true,
+    "html.format.preserveNewLines": true,
+    "html.format.templating": true,
+    "html.format.indentHandlebars": true,
+    "html.format.enable": true,
+    "files.autoSave": "onFocusChange",
+    "djlint.closeVoidTags": true
+}

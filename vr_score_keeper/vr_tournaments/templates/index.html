@@ -1,51 +1,66 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-            {% if latest_tournament %}
-            <div class="card">
-                <header class="card-header">
-                  <p class="card-header-title">{{ latest_tournament.name }}</p>
-                  <p class="card-header-title is-pulled-right">{{ latest_tournament.date }}</p>
-                    
-                </header>
-                <div class="card-content py-1">
-                    <table class="table is-fullwidth">
-                        <thead>
-                            <tr>
-                                <th>Player</th>
-                                <th>Score</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for player, score in player_scores %}
-                                <tr>
-                                    <td>{{ player.name }}</td>
-                                    <td>{{ score }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <footer class="card-footer">
-                  <a href="{% url 'tournament_detail' pk=latest_tournament.pk %}" class="card-footer-item">Details</a>
-                  <a href="{% url 'create_match' %}" class="card-footer-item">Add Match</a>
-                </footer>
-            </div>
-            {% endif %}
-            <h2 class="is-size-3 mb-4">Previous Tournaments</h2>
-            {% for tournament in tournaments %}
-            <div class="card">
-                <header class="card-header">
-                  <p class="card-header-title">{{ tournament.name }}</p>
-                  <p class="card-header-title is-pulled-right">{{ tournament.date }}</p>
-                    
-                </header>
-                <div class="card-content pt-1">
-                  <div class="content">
-                    <p class="has-text-weight-bold is-uppercase">Winner: Rocky</p>
-                    List of other scores
-                  </div>
-                </div>
-            </div>
+  {% if latest_tournament %}
+    <div class="card">
+      <header class="card-header">
+        <p class="card-header-title">{{ latest_tournament.name }}</p>
+        <p class="card-header-title is-pulled-right">{{ latest_tournament.date }}</p>
+
+      </header>
+      <div class="card-content py-1">
+        <table class="table is-fullwidth">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for player, score in players_scores %}
+              <tr>
+                <td>{{ player }}</td>
+                <td>
+                  {% if score %}
+                    {{ score }}
+                  {% else %}
+                    0
+                  {% endif %}
+                </td>
+              </tr>
             {% endfor %}
-{% endblock %}
+          </tbody>
+        </table>
+      </div>
+      <footer class="card-footer">
+        <div class="card-footer-item">
+          <div class="has-text-weight-semibold">
+            Winner:
+            {% if latest_tournament.winner %}
+              {{ latest_tournament.winner }}
+            {% else %}
+              None
+            {% endif %}
+          </div>
+        </div>
+        <a href="{% url 'tournament_detail' pk=latest_tournament.pk %}"
+           class="card-footer-item">Details</a>
+      </footer>
+    </div>
+  {% endif %}
+  <h2 class="is-size-3 mb-4">Previous Tournaments</h2>
+  {% for tournament in tournaments %}
+    <div class="card">
+      <header class="card-header">
+        <p class="card-header-title">{{ tournament.name }}</p>
+        <p class="card-header-title is-pulled-right">{{ tournament.date }}</p>
+
+      </header>
+      <div class="card-content pt-1">
+        <div class="content">
+          <p class="has-text-weight-semibold is-uppercase">Winner: {{ tournament.winner }}</p>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock content %}

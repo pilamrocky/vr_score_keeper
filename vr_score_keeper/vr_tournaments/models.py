@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -13,6 +12,7 @@ class Tournament(models.Model):
 
     date = models.DateField(default=timezone.localdate)
     name = models.CharField(max_length=255, blank=True)
+    winner = models.CharField(max_length=255, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.name:
@@ -52,14 +52,10 @@ class Match(models.Model):
     tournament = models.ForeignKey(
         Tournament, on_delete=models.CASCADE, related_name="matches"
     )
-    date = models.DateTimeField(default=timezone.now)
+    date = models.DateField(default=timezone.localdate)
 
     def __str__(self):
         return f"Match {self.id} - {self.tournament.name}"
-
-    def clean(self):
-        if self.date > datetime.now():
-            raise ValidationError("Match date cannot be in the future")
 
     class Meta:
         ordering = ["-date"]

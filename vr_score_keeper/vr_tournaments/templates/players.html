@@ -1,42 +1,41 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-            <h1 class="is-size-3 mb-4">Players</h1>
-            <form method="post" class="box">
-                {% csrf_token %}
-                {% if form.errors %}
-                <div class="notification is-danger">
-                    <ul>
-                        {% for field, errors in form.errors.items %}
-                            {% for error in errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-                <div class="field">
-                    <label class="label">Name</label>
-                    <div class="control">
-                        {{ form.name }}
-                    </div>
-                </div>
-                <button class="button is-primary is-outlined is-dark" type="submit">Add Player</button>
-            </form>
-            <table class="table is-fullwidth">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Options</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for player in players %}
-                        <tr>
-                            <td>{{ player.name }}</td>
-                            <td><a href="{% url 'delete_player' pk=player.id %}" class="button is-danger is-outlined is-dark is-small">Delete</a></td>
-                        </tr>
+    <h1 class="is-size-3 mb-4">Players</h1>
+    <form method="post" class="box">
+        {% csrf_token %}
+        {% if form.errors %}
+            <div class="notification is-danger">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}<li>{{ error }}</li>{% endfor %}
                     {% endfor %}
-                </tbody>
-            </table>
-{% endblock %}
+                </ul>
+            </div>
+        {% endif %}
+        <div class="field">
+            <label class="label">Name</label>
+            <div class="control">{{ form.name }}</div>
+        </div>
+        <button class="button is-primary is-outlined is-dark" type="submit">Add Player</button>
+    </form>
+    <table class="table is-fullwidth">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Options</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for player in players %}
+                <tr>
+                    <td>{{ player.name }}</td>
+                    <td>
+                        <a href="{% url 'delete_player' pk=player.id %}"
+                           class="button is-danger is-outlined is-dark is-small">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}

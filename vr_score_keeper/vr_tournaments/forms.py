@@ -45,3 +45,27 @@ class ScoreForm(forms.ModelForm):
             "player",
             "score",
         )
+
+
+class MultiScoreForm(forms.Form):
+    # scores = forms.CharField(widget=forms.HiddenInput())
+
+    def __init__(self, registered_players, match, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.registered_players = registered_players
+        self.match = match
+        for player in registered_players:
+            self.fields[f"score_{player.pk}"] = forms.IntegerField(label=player.name)
+
+    def save(self):
+        scores_data = self.cleaned_data
+        scores = []
+        for player_pk, score in [
+            (pk, scores_data[f"score_{pk}"])
+            for pk in [player.pk for player in self.registered_players]
+        ]:
+            score, created = Score.objects.get_or_create(
+                match=self.match, player_id=player_pk, defaults={"score": score}
+            )
+            scores.append(score)
+        return scores

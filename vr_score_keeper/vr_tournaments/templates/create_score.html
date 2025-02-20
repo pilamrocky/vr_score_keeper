@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="is-size-3 mb-4">Match Scores</h1>
+    <form method="post" action="{% url 'create_score' match.pk %}" class="box">
+        {% csrf_token %}
+        {% if form.errors %}
+            <div class="notification is-danger">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% for field in form %}
+            <div class="field is-grouped">
+                <label class="label is-large pr-4">{{ field.label }}</label>
+                <div class="control">
+                    <div class="select">
+                        <select name="{{ field.name }}" id="{{ field.auto_id }}" required>
+                            <option value="0">0</option>
+                            {% for i in form %}<option value="{{ forloop.counter }}">{{ forloop.counter }}</option>{% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <button class="button is-primary" type="submit">Create Scores</button>
+    </form>
+{% endblock content %}

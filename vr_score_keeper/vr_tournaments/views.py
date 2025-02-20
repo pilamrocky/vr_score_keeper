@@ -1,27 +1,35 @@
 from django.db.models import Sum
 from django.shortcuts import render, redirect
 from .models import Tournament, Player, Match, Score
-from .forms import TournamentForm, PlayerForm, MatchForm, ScoreForm
+from .forms import TournamentForm, PlayerForm, MatchForm, ScoreForm, MultiScoreForm
 
 
 def index(request):
     previous_tournaments = Tournament.objects.order_by("-date")[1:]
     latest_tournament = Tournament.objects.order_by("-date").first()
-    player_scores = []
-    if latest_tournament and hasattr(latest_tournament, "player_set"):
-        tournament_players = latest_tournament.player_set.all()
-        for player in tournament_players:
-            score = player.score_set.filter(tournament=latest_tournament).aggregate(
-                total_score=Sum("score")
-            )["total_score"]
-            player_scores.append((player, score))
+    players_scores = []
+    if latest_tournament and latest_tournament.matches.count() > 0:
+        for player in latest_tournament.players.all():
+            total_score = player.scores.filter(
+                match__tournament=latest_tournament
+            ).aggregate(total_score=Sum("score"))["total_score"]
+            players_scores.append((player, total_score))
+
+            # Check if any player's total score is above 30
+            winners = [player for player, score in players_scores if score >= 30]
+
+            # Update the winner field in the Tournament model
+            if winners:
+                latest_tournament.winner = winners[0].name
+                latest_tournament.save()
+
     return render(
         request,
         "index.html",
         {
             "tournaments": previous_tournaments,
             "latest_tournament": latest_tournament,
-            "player_scores": player_scores,
+            "players_scores": players_scores,
         },
     )
 
@@ -46,6 +54,11 @@ def tournaments(request):
     return render(
         request, "tournaments.html", {"tournaments": all_tournaments, "form": form}
     )
+
+
+def matches(request):
+    all_tournaments = Tournament.objects.all().order_by("-date")
+    return render(request, "matches.html", {"tournaments": all_tournaments})
 
 
 def tournament_registration(request, pk):
@@ -80,7 +93,24 @@ def tournament_registration(request, pk):
 
 def tournament_detail(request, pk):
     tournament = Tournament.objects.get(pk=pk)
-    return render(request, "tournament_detail.html", {"tournament": tournament})
+    tournament_matches = []
+
+    if hasattr(tournament, "matches"):
+        tournament_matches = tournament.matches.all().order_by("-date")
+    registered_players = []
+
+    if hasattr(tournament, "players"):
+        registered_players = tournament.players.all()
+
+    return render(
+        request,
+        "tournament_detail.html",
+        {
+            "tournament": tournament,
+            "registered_players": registered_players,
+            "matches": tournament_matches,
+        },
+    )
 
 
 def create_tournament(request):
@@ -105,26 +135,31 @@ def create_player(request):
     return render(request, "create_player.html", {"form": form})
 
 
-def create_match(request):
+def create_match(request, tournament_pk):
+    tournament = Tournament.objects.get(pk=tournament_pk)
     if request.method == "POST":
         form = MatchForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect("match_list")
+            return redirect("create_score", match_pk=form.instance.pk)
     else:
         form = MatchForm()
-    return render(request, "create_match.html", {"form": form})
+    return render(
+        request, "create_match.html", {"form": form, "tournament": tournament}
+    )
 
 
-def create_score(request):
+def create_score(request, match_pk):
+    match = Match.objects.get(pk=match_pk)
+    registered_players = match.tournament.players.all()
     if request.method == "POST":
-        form = ScoreForm(request.POST)
+        form = MultiScoreForm(registered_players, match, request.POST)
         if form.is_valid():
             form.save()
-            return redirect("score_list")
+            return redirect("tournament_detail", pk=match.tournament.pk)
     else:
-        form = ScoreForm()
-    return render(request, "create_score.html", {"form": form})
+        form = MultiScoreForm(registered_players, match)
+    return render(request, "create_score.html", {"form": form, "match": match})
 
 
 def update_tournament(request, pk):
@@ -190,7 +225,7 @@ def delete_player(request, pk):
 def delete_match(request, pk):
     match = Match.objects.get(pk=pk)
     match.delete()
-    return redirect("match_list")
+    return redirect("matches")
 
 
 def delete_score(request, pk):

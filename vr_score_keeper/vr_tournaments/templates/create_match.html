@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="is-size-3 mb-4">Create Match</h1>
+    <form method="post"
+          action="{% url 'create_match' tournament.pk %}"
+          class="box">
+        {% csrf_token %}
+        {% for field in form %}
+            {% if field.name != 'tournament' %}
+                <div class="field">
+                    <label class="label">{{ field.label }}</label>
+                    <div class="control">{{ field }}</div>
+                </div>
+            {% endif %}
+        {% endfor %}
+        <input type="hidden" name="tournament" value="{{ tournament.pk }}" />
+        <button class="button is-primary" type="submit">Create Match</button>
+    </form>
+{% endblock content %}

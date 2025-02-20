@@ -5,6 +5,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("players/", views.players, name="players"),
     path("tournaments/", views.tournaments, name="tournaments"),
+    path("matches/", views.matches, name="matches"),
     path("tournament/<pk>/", views.tournament_detail, name="tournament_detail"),
     path(
         "tournament/registration/<pk>/",
@@ -18,8 +19,8 @@ urlpatterns = [
     # path("scores/<pk>/", views.score_detail, name="score_detail"),
     path("create_tournament/", views.create_tournament, name="create_tournament"),
     path("create_player/", views.create_player, name="create_player"),
-    path("create_match/", views.create_match, name="create_match"),
-    path("create_score/", views.create_score, name="create_score"),
+    path("create_match/<tournament_pk>/", views.create_match, name="create_match"),
+    path("create_score/<match_pk>/", views.create_score, name="create_score"),
     path("update_tournament/<pk>/", views.update_tournament, name="update_tournament"),
     path("update_player/<pk>/", views.update_player, name="update_player"),
     path("update_match/<pk>/", views.update_match, name="update_match"),
