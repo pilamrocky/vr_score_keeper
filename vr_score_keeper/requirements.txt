@@ -6,3 +6,6 @@ sqlparse==0.5.3
 # gunicorn
 gunicorn==23.0.0
 packaging==24.2
+
+# postgres
+psycopg2==2.9.10
