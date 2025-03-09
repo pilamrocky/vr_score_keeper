@@ -23,5 +23,4 @@ urlpatterns = [
     path("delete_tournament/<pk>/", views.delete_tournament, name="delete_tournament"),
     path("delete_player/<pk>/", views.delete_player, name="delete_player"),
     path("delete_match/<pk>/", views.delete_match, name="delete_match"),
-    path("delete_score/<pk>/", views.delete_score, name="delete_score"),
 ]
