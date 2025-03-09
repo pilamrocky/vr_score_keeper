@@ -5,30 +5,59 @@ from .forms import TournamentForm, PlayerForm, MatchForm, ScoreForm, MultiScoreF
 
 ## INDEX ##
 def index(request):
+    # Get the latest tournament and all previous tournaments
     previous_tournaments = Tournament.objects.order_by("-date")[1:]
     latest_tournament = Tournament.objects.order_by("-date").first()
-    players_scores = []
-    if latest_tournament and latest_tournament.matches.count() > 0:
+
+    # Calculate total scores for the latest tournament
+    latest_tournament_player_scores = []
+    if latest_tournament:
+        for player in latest_tournament.players.all():
+            total_score = player.scores.filter(match__tournament=latest_tournament).aggregate(total=Sum('score'))['total'] or 0
+            latest_tournament_player_scores.append((player, total_score))
+
+        # Determine the winner if there is one of the latest tournament
         winner = None
         max_score = 0
-        for player in latest_tournament.players.all():
-            total_score = player.scores.filter(
-                match__tournament=latest_tournament
-            ).aggregate(total_score=Sum("score"))["total_score"] or 0 # Handle case where no scores exist.
-            if total_score >= 30 and (winner is None or total_score > max_score):
+        for player, score in latest_tournament_player_scores:
+            if score >= 30 and (winner is None or score > max_score):
                 winner = player
-                max_score = total_score
+                max_score = score
         if winner:
             latest_tournament.winner = winner.name
             latest_tournament.save()
+
+    # Calculate total scores for previous tournaments
+    previous_tournament_player_scores = []
+    for tournament in previous_tournaments:
+        tournament_player_scores = []
+        for player in tournament.players.all():
+            total_score = player.scores.filter(match__tournament=tournament).aggregate(total=Sum('score'))['total'] or 0
+            tournament_player_scores.append((player, total_score))
+        previous_tournament_player_scores.append((tournament, tournament_player_scores))
+
+    # players_scores = []
+    # if latest_tournament and latest_tournament.matches.count() > 0:
+    #     winner = None
+    #     max_score = 0
+    #     for player in latest_tournament.players.all():
+    #         total_score = player.scores.filter(
+    #             match__tournament=latest_tournament
+    #         ).aggregate(total_score=Sum("score"))["total_score"] or 0 # Handle case where no scores exist.
+    #         if total_score >= 30 and (winner is None or total_score > max_score):
+    #             winner = player
+    #             max_score = total_score
+    #     if winner:
+    #         latest_tournament.winner = winner.name
+    #         latest_tournament.save()
 
     return render(
         request,
         "index.html",
         {
-            "tournaments": previous_tournaments,
             "latest_tournament": latest_tournament,
-            "players_scores": players_scores,
+            "latest_tournament_player_scores": latest_tournament_player_scores,
+            "previous_tournament_player_scores": previous_tournament_player_scores,
         },
     )
 
