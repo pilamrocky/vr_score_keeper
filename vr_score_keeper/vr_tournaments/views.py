@@ -53,10 +53,6 @@ def tournaments(request):
     return render(
         request, "tournaments.html", {"tournaments": all_tournaments, "form": form}
     )
-## MATCHES ##
-def matches(request):
-    all_tournaments = Tournament.objects.all().order_by("-date")
-    return render(request, "matches.html", {"tournaments": all_tournaments})
 
 ## TOURNAMENT REGISTRATION ##
 def tournament_registration(request, pk):
