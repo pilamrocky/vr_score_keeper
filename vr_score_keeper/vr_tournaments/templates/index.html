@@ -1,66 +1,95 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {% if latest_tournament %}
-    <div class="card">
-      <header class="card-header">
-        <p class="card-header-title">{{ latest_tournament.name }}</p>
-        <p class="card-header-title is-pulled-right">{{ latest_tournament.date }}</p>
 
-      </header>
-      <div class="card-content py-1">
+  {% if latest_tournament %}
+  <h2 class="is-size-3 mb-4">Current Tournament</h2>
+  <div class="card">
+
+    <!--Main Card-->
+    <div class="card-content pt-0 pb-3 px-4">
+      <div class="content">
+
+        <!--Box Header Level-->
+        <div class="level is-mobile mb-2 pt-4">
+          <div class="level-left">
+            <div class="level-item">
+              <p class="title is-5">{{ latest_tournament.name }}</p>
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="level-item">
+              <p class="title is-6">{{ latest_tournament.date }}</p>
+            </div>
+          </div>
+        </div>
+
+        {% if latest_tournament.winner %}
+          <p class="subtitle is-6 py-1 mb-2">Winner: {{ latest_tournament.winner }}</p>
+        {% endif %}
+
+        <!--Score Table-->
         <table class="table is-fullwidth">
           <thead>
-            <tr>
-              <th>Player</th>
-              <th>Score</th>
-            </tr>
+              {% for player, score in latest_tournament_player_scores %}
+                <th class="is-size-6 has-text-centered">{{ player.name }}</th>
+              {% endfor %}
           </thead>
           <tbody>
-            {% for player, score in players_scores %}
               <tr>
-                <td>{{ player }}</td>
-                <td>
-                  {% if score %}
-                    {{ score }}
-                  {% else %}
-                    0
-                  {% endif %}
-                </td>
+                {% for player, score in latest_tournament_player_scores %}
+                  <td class="is-size-5 has-text-centered">{{ score }}</td>
+                {% endfor %}
               </tr>
-            {% endfor %}
           </tbody>
         </table>
       </div>
-      <footer class="card-footer">
-        <div class="card-footer-item">
-          <div class="has-text-weight-semibold">
-            Winner:
-            {% if latest_tournament.winner %}
-              {{ latest_tournament.winner }}
-            {% else %}
-              None
-            {% endif %}
-          </div>
-        </div>
-        <a href="{% url 'tournament_detail' pk=latest_tournament.pk %}"
-           class="card-footer-item">Details</a>
-      </footer>
     </div>
+    <footer class="card-footer">
+      <a href="{% url 'tournament_detail' latest_tournament.pk %}" class="card-footer-item">Details</a>
+      <a href="{% url 'create_match' latest_tournament.pk %}" class="card-footer-item">Add Match</a>
+    </footer>
+  </div>
   {% endif %}
-  <h2 class="is-size-3 mb-4">Previous Tournaments</h2>
-  {% for tournament in tournaments %}
-    <div class="card">
-      <header class="card-header">
-        <p class="card-header-title">{{ tournament.name }}</p>
-        <p class="card-header-title is-pulled-right">{{ tournament.date }}</p>
+  <h2 class="is-size-3 mb-4 mt-6">Previous Tournaments</h2>
+  {% for tournament, player_scores in previous_tournament_player_scores %}
+  <div class="box">
 
-      </header>
-      <div class="card-content pt-1">
-        <div class="content">
-          <p class="has-text-weight-semibold is-uppercase">Winner: {{ tournament.winner }}</p>
+    <!--Box Header Level-->
+    <div class="level is-mobile mb-2">
+      <div class="level-left">
+        <div class="level-item">
+          <p class="title is-6">{{ tournament.name }}</p>
+        </div>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <p class="title is-6">{{ tournament.date }}</p>
         </div>
       </div>
     </div>
+
+    <!--Winner Subtitle-->
+    {% if tournament.winner %}
+      <p class="subtitle is-6 py-1 mb-2">Winner: {{ tournament.winner }}</p>
+    {% endif %}
+
+    <!--Score Table-->
+    <table class="table is-fullwidth">
+      <thead>
+          {% for player, score in player_scores %}
+            <th class="is-size-6 has-text-centered">{{ player.name }}</th>
+          {% endfor %}
+      </thead>
+      <tbody>
+          <tr>
+            {% for player, score in player_scores %}
+              <td class="is-size-5 has-text-centered">{{ score }}</td>
+            {% endfor %}
+          </tr>
+      </tbody>
+    </table>
+
+  </div>
   {% endfor %}
 {% endblock content %}
