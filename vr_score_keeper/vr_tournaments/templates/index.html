@@ -52,7 +52,7 @@
   </div>
   {% endif %}
   <h2 class="is-size-3 mb-4 mt-6">Previous Tournaments</h2>
-  {% for tournament, player_scores in previous_tournament_player_scores %}
+  {% for tournament, player_scores in previous_tournament_player_scores %} {# tournament is the tournament object, player_scores is a list of (player, score) tuples #}
   <div class="box">
 
     <!--Box Header Level-->
