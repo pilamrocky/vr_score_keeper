@@ -28,7 +28,11 @@
       </div>
 
       <!--Winner Subtitle-->
-      {% if tournament.winner %} <p class="subtitle is-6 py-1 mb-2"> Winner: {{ tournament.winner }}</p> {%else%} <p class="subtitle is-6 py-1 mb-2"> In Progress</p> {% endif %}
+      {% if tournament.winner %}
+        <p class="subtitle is-6 py-1 mb-2">Winner: {{ tournament.winner }}</p>
+      {%else%}
+        <p class="subtitle is-6 py-1 mb-2">In Progress</p>
+      {% endif %}
 
       <!--Score Table-->
       <table class="table is-fullwidth">
