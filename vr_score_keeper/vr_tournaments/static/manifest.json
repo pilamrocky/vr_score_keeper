@@ -1,0 +1,21 @@
+{
+    "name": "VR Golf+ Scorekeeper",
+    "short_name": "Golf+ Scorekeeper",
+    "description": "Keep track of scores for your VR golf tournaments.",
+    "icons": [
+        {
+            "src": "/static/img/icons/golf_icon_192.png", //Replace with your icon paths.  Make sure these images exist in your static folder.
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/img/icons/golf_icon_512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "/", // Or your app's main URL
+    "display": "standalone", // Or "fullscreen" if desired. This configures the app on the homescreen
+    "background_color": "#ffffff", // Customize this
+    "theme_color": "#000000" // Customize this
+}
