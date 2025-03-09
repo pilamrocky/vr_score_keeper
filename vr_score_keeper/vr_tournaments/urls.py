@@ -5,7 +5,6 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("players/", views.players, name="players"),
     path("tournaments/", views.tournaments, name="tournaments"),
-    path("matches/", views.matches, name="matches"),
     path("tournament/<pk>/", views.tournament_detail, name="tournament_detail"),
     path(
         "tournament/registration/<pk>/",
