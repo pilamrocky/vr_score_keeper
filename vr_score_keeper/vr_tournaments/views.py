@@ -215,16 +215,10 @@ def delete_tournament(request, pk):
 def delete_player(request, pk):
     player = Player.objects.get(pk=pk)
     player.delete()
-    return redirect("player_list")
+    return redirect("players")
 
 
 def delete_match(request, pk):
     match = Match.objects.get(pk=pk)
     match.delete()
     return redirect("matches")
-
-
-def delete_score(request, pk):
-    score = Score.objects.get(pk=pk)
-    score.delete()
-    return redirect("score_list")
