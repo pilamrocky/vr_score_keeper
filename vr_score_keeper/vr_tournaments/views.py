@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from .models import Tournament, Player, Match, Score
 from .forms import TournamentForm, PlayerForm, MatchForm, ScoreForm, MultiScoreForm
 
+
 ## INDEX ##
 def index(request):
     # Get the latest tournament and all previous tournaments
@@ -13,7 +14,12 @@ def index(request):
     latest_tournament_player_scores = []
     if latest_tournament:
         for player in latest_tournament.players.all():
-            total_score = player.scores.filter(match__tournament=latest_tournament).aggregate(total=Sum('score'))['total'] or 0
+            total_score = (
+                player.scores.filter(match__tournament=latest_tournament).aggregate(
+                    total=Sum("score")
+                )["total"]
+                or 0
+            )
             latest_tournament_player_scores.append((player, total_score))
 
         # Determine the winner if there is one of the latest tournament
@@ -32,24 +38,14 @@ def index(request):
     for tournament in previous_tournaments:
         tournament_player_scores = []
         for player in tournament.players.all():
-            total_score = player.scores.filter(match__tournament=tournament).aggregate(total=Sum('score'))['total'] or 0
+            total_score = (
+                player.scores.filter(match__tournament=tournament).aggregate(
+                    total=Sum("score")
+                )["total"]
+                or 0
+            )
             tournament_player_scores.append((player, total_score))
         previous_tournament_player_scores.append((tournament, tournament_player_scores))
-
-    # players_scores = []
-    # if latest_tournament and latest_tournament.matches.count() > 0:
-    #     winner = None
-    #     max_score = 0
-    #     for player in latest_tournament.players.all():
-    #         total_score = player.scores.filter(
-    #             match__tournament=latest_tournament
-    #         ).aggregate(total_score=Sum("score"))["total_score"] or 0 # Handle case where no scores exist.
-    #         if total_score >= 30 and (winner is None or total_score > max_score):
-    #             winner = player
-    #             max_score = total_score
-    #     if winner:
-    #         latest_tournament.winner = winner.name
-    #         latest_tournament.save()
 
     return render(
         request,
@@ -60,6 +56,7 @@ def index(request):
             "previous_tournament_player_scores": previous_tournament_player_scores,
         },
     )
+
 
 ## PLAYERS ##
 def players(request):
@@ -75,6 +72,7 @@ def players(request):
 
     return render(request, "players.html", {"players": current_players, "form": form})
 
+
 ## TOURNAMENTS ##
 def tournaments(request):
     all_tournaments = Tournament.objects.all().order_by("-date")
@@ -82,6 +80,7 @@ def tournaments(request):
     return render(
         request, "tournaments.html", {"tournaments": all_tournaments, "form": form}
     )
+
 
 ## TOURNAMENT REGISTRATION ##
 def tournament_registration(request, pk):
@@ -113,6 +112,7 @@ def tournament_registration(request, pk):
         },
     )
 
+
 ## TOURNAMENT DETAIL ##
 def tournament_detail(request, pk):
     tournament = Tournament.objects.get(pk=pk)
@@ -134,6 +134,7 @@ def tournament_detail(request, pk):
             "matches": tournament_matches,
         },
     )
+
 
 def create_tournament(request):
     if request.method == "POST":
@@ -169,6 +170,7 @@ def create_match(request, tournament_pk):
     return render(
         request, "create_match.html", {"form": form, "tournament": tournament}
     )
+
 
 def create_score(request, match_pk):
     match = Match.objects.get(pk=match_pk)
@@ -246,4 +248,5 @@ def delete_player(request, pk):
 def delete_match(request, pk):
     match = Match.objects.get(pk=pk)
     match.delete()
-    return redirect("matches")
+    tournament = match.tournament
+    return redirect("tournament_detail", pk=tournament.pk)
