@@ -3,9 +3,12 @@ Django==5.1.5
 asgiref==3.8.1
 sqlparse==0.5.3
 
-# gunicorn
+#Gunicorn
 gunicorn==23.0.0
 packaging==24.2
 
-# postgres
+#Postgres
 psycopg2==2.9.10
+
+#Whitenoise - Static Files
+whitenoise==6.9.0
