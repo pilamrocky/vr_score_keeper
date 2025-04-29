@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-  
-<!--Header-->
+
+  <!--Header-->
   <h1 class="is-size-3 mb-4">Tournaments</h1>
 
   <!--Create Tournament Button-->
-  <a href="{% url 'create_tournament' %}"
-     class="button is-primary is-outlined isdark mb-5">Create Tournament</a>
-  
+  {% if user.is_superuser %}
+    <a href="{% url 'create_tournament' %}"
+       class="button is-primary is-outlined isdark mb-5">Create Tournament</a>
+  {% endif %}
+
   <!--Main Tournament Box-->
   {% for tournament in tournaments %}
     <div class="box">
@@ -30,7 +32,7 @@
       <!--Winner Subtitle-->
       {% if tournament.winner %}
         <p class="subtitle is-6 py-1 mb-2">Winner: {{ tournament.winner }}</p>
-      {%else%}
+      {% else %}
         <p class="subtitle is-6 py-1 mb-2">In Progress</p>
       {% endif %}
 
@@ -38,12 +40,12 @@
       <table class="table is-fullwidth">
         <thead>
           <th class="is-size-7">Date</th>
-            {% for player in tournament.players.all %}<th class="is-size-7">{{ player }}</th>{% endfor %}
+          {% for player in tournament.players.all %}<th class="is-size-7">{{ player }}</th>{% endfor %}
         </thead>
         <tbody>
           {% for match in tournament.matches.all %}
             <tr>
-              <td class="is-size-6">{{ match.date|date:"m-d-y" }}</td>
+              <td class="is-size-7">{{ match.date|date:"m-d-y" }}</td>
               {% for player in tournament.players.all %}
                 {% for score in match.scores.all %}
                   {% if score.player == player %}<td class="is-size-6 has-text-centered">{{ score.score }}</td>{% endif %}
@@ -53,7 +55,6 @@
           {% endfor %}
         </tbody>
       </table>
-
     </div>
   {% endfor %}
 {% endblock content %}

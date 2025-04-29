@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {% if form.errors %}
+            <div class="notification is-danger">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% for field in form %}
+            <div class="field">
+                <label class="label">{{ field.label }}</label>
+                <div class="control">{{ field }}</div>
+            </div>
+        {% endfor %}
+        <div class="control">
+            <button class="button is-primary">Login</button>
+        </div>
+    </form>
+    {# Add links for password reset or signup if needed later #}
+    {# <p><a href="{% url 'password_reset' %}">Forgot password?</a></p> #}
+{% endblock content %}

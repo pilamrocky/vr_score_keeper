@@ -9,8 +9,10 @@
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
         {% load static %}
-        <link rel="manifest" href="{% static 'manifest.json' %}">
-        <link rel="shortcut icon" type="image/png" href="{% static 'img/icons/favicon.ico' %}" >
+        <link rel="manifest" href="{% static 'manifest.json' %}" />
+        <link rel="shortcut icon"
+              type="image/png"
+              href="{% static 'img/icons/favicon.ico' %}" />
     </head>
     <body>
         <div class="container">
@@ -19,7 +21,7 @@
                  aria-label="main navigation">
                 <div class="navbar-brand">
                     <a href="{% url 'index' %}">
-                        <h1 class="navbar-item is-size-3 has-text-info px-6">VR Tournament</h1>
+                        <h1 class="navbar-item is-size-3 is-family-monospace has-text-link px-3">VR Tournament</h1>
                     </a>
                     <a role="button"
                        class="navbar-burger"
@@ -36,8 +38,23 @@
                     <div class="navbar-end">
                         <div class="navbar-item">
                             <div class="buttons">
-                                <a class="button is-info" href="{% url 'players' %}">Players</a>
-                                <a class="button is-info" href="{% url 'tournaments' %}">Tournaments</a>
+                                {% if user.is_authenticated %}
+                                    {# Check if user is logged in #}
+                                    {% if user.is_superuser %}
+                                        <a class="button is-info" href="{% url 'players' %}">Players</a>
+                                    {% endif %}
+                                    <a class="button is-info" href="{% url 'tournaments' %}">Tournaments</a>
+                                    <a class="button is-light" href="{% url 'profile' %}">Profile: ({{ user.username }})</a>
+                                    {# Logout Form Start #}
+                                    <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="button is-danger">Logout</button>
+                                    </form>
+                                    {# Logout Form End #}
+                                {% else %}
+                                    {# Optionally add a login link if user is not logged in #}
+                                    <a class="button is-success" href="{% url 'login' %}">Login</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

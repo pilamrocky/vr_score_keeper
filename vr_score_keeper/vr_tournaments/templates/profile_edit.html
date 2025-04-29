@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="title is-3">Edit Profile</h1>
+
+    {# Display non-field errors if any #}
+    {% if form.non_field_errors %}<div class="notification is-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        {# Loop through fields and render with Bulma structure #}
+        {% for field in form %}
+            <div class="field">
+                <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <div class="control">{{ field }}</div>
+                {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+                {% if field.errors %}<p class="help is-danger">{{ field.errors|striptags }}</p>{% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="field is-grouped">
+            <div class="control">
+                <button type="submit" class="button is-success">Save Changes</button>
+            </div>
+            <div class="control">
+                <a href="{% url 'profile' %}" class="button is-light">Cancel</a>
+            </div>
+        </div>
+    </form>
+{% endblock content %}

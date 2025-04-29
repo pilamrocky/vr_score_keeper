@@ -1,12 +1,68 @@
 from django.db.models import Sum
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from .models import Tournament, Player, Match, Score
-from .forms import TournamentForm, PlayerForm, MatchForm, ScoreForm, MultiScoreForm
+from .forms import (
+    TournamentForm,
+    PlayerForm,
+    MatchForm,
+    ScoreForm,
+    MultiScoreForm,
+    UserProfileForm,
+)
+
+
+def is_superuser(user):
+    """Checks if the given user has superuser privileges."""
+    return user.is_superuser
+
+
+@login_required
+def profile(request):
+    """Displays the user's profile information."""
+    return render(request, "profile.html")  # Use app-specific template path
+
+
+@login_required
+def profile_edit(request):
+    """Handles editing the user's profile information."""
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, "Your profile was successfully updated!"
+            )  # Add success message
+            return redirect("profile")  # Redirect back to the profile view
+
+        messages.error(request, "Please correct the error below.")  # Add error message
+
+    else:
+        form = UserProfileForm(instance=request.user)
+
+    return render(
+        request, "profile_edit.html", {"form": form}
+    )  # Use app-specific template path
 
 
 ## INDEX ##
+@login_required
 def index(request):
     # Get the latest tournament and all previous tournaments
+    """
+    Displays the index page with the latest tournament and all previous tournaments.
+
+    The latest tournament's player scores are calculated, and the winner is determined
+    if the score threshold is met. For each previous tournament, player scores are also
+    calculated.
+
+    :param request: The HTTP request object.
+    :return: An HTTP response object rendering the index.html template with context
+             containing the latest tournament, the latest tournament player scores,
+             and previous tournaments with their respective player scores.
+    """
+
     previous_tournaments = Tournament.objects.order_by("-date")[1:]
     latest_tournament = Tournament.objects.order_by("-date").first()
 
@@ -59,7 +115,22 @@ def index(request):
 
 
 ## PLAYERS ##
+@login_required
+@user_passes_test(is_superuser)
 def players(request):
+    """
+    View to show all players in the database and create a new player if the
+    request method is POST.
+
+    The view is only accessible to superusers.
+
+    Template:
+        players.html
+
+    Context:
+        players: all players in the database
+        form: a form to create a new player
+    """
     current_players = Player.objects.all()
     form = PlayerForm()
     if request.method == "POST":
@@ -74,7 +145,14 @@ def players(request):
 
 
 ## TOURNAMENTS ##
+@login_required
 def tournaments(request):
+    """
+    Displays a list of all tournaments in descending order of date, and allows the user to create a new tournament.
+
+    :param request: The HTTP request object.
+    :return: An HTTP response object rendering the tournaments.html template.
+    """
     all_tournaments = Tournament.objects.all().order_by("-date")
     form = TournamentForm()
     return render(
@@ -83,7 +161,15 @@ def tournaments(request):
 
 
 ## TOURNAMENT REGISTRATION ##
+@login_required
+@user_passes_test(is_superuser)
 def tournament_registration(request, pk):
+    """
+    Allows a superuser to register players for a tournament. The user is presented
+    with a list of all players and a list of players who are currently registered
+    for the tournament. The user can add or remove players from the tournament.
+    """
+
     tournament = Tournament.objects.get(pk=pk)
     all_players = Player.objects.all()
     registered_players = []
@@ -114,7 +200,17 @@ def tournament_registration(request, pk):
 
 
 ## TOURNAMENT DETAIL ##
+@login_required
+@user_passes_test(is_superuser)
 def tournament_detail(request, pk):
+    """
+    Displays the details of a tournament, including the registered players and matches.
+
+    :param request: The HTTP request object.
+    :param pk: The primary key of the tournament to be displayed.
+    :return: An HTTP response object rendering the tournament detail page.
+    """
+
     tournament = Tournament.objects.get(pk=pk)
     tournament_matches = []
 
@@ -136,7 +232,17 @@ def tournament_detail(request, pk):
     )
 
 
+@login_required
+@user_passes_test(is_superuser)
 def create_tournament(request):
+    """
+    Creates a new tournament and redirects to the tournament registration page.
+
+    :param request: The HTTP request object.
+    :return: An HTTP response object rendering the create tournament page or
+             redirecting to the tournament registration page.
+    """
+
     if request.method == "POST":
         form = TournamentForm(request.POST)
         if form.is_valid():
@@ -147,7 +253,15 @@ def create_tournament(request):
     return render(request, "create_tournament.html", {"form": form})
 
 
+@login_required
+@user_passes_test(is_superuser)
 def create_player(request):
+    """
+    Creates a new player.
+
+    :param request: The HTTP request object.
+    :return: An HTTP response object redirecting to the player list page.
+    """
     if request.method == "POST":
         form = PlayerForm(request.POST)
         if form.is_valid():
@@ -158,7 +272,16 @@ def create_player(request):
     return render(request, "create_player.html", {"form": form})
 
 
+@login_required
+@user_passes_test(is_superuser)
 def create_match(request, tournament_pk):
+    """
+    Creates a new match for a given tournament.
+
+    :param request: The HTTP request object.
+    :param tournament_pk: The primary key of the tournament to add the match to.
+    :return: An HTTP response object.
+    """
     tournament = Tournament.objects.get(pk=tournament_pk)
     if request.method == "POST":
         form = MatchForm(request.POST)
@@ -172,7 +295,16 @@ def create_match(request, tournament_pk):
     )
 
 
+@login_required
+@user_passes_test(is_superuser)
 def create_score(request, match_pk):
+    """
+    Creates scores for a match.
+
+    :param request: The HTTP request object.
+    :param match_pk: The primary key of the match to be scored.
+    :return: An HTTP response object redirecting to the tournament detail page.
+    """
     match = Match.objects.get(pk=match_pk)
     registered_players = match.tournament.players.all()
     if request.method == "POST":
@@ -185,7 +317,16 @@ def create_score(request, match_pk):
     return render(request, "create_score.html", {"form": form, "match": match})
 
 
+@login_required
+@user_passes_test(is_superuser)
 def update_tournament(request, pk):
+    """
+    Updates a tournament with the given primary key, and then redirects to the tournament list page.
+
+    :param request: The HTTP request object.
+    :param pk: The primary key of the tournament to be updated.
+    :return: An HTTP response object redirecting to the tournament list page.
+    """
     tournament = Tournament.objects.get(pk=pk)
     if request.method == "POST":
         form = TournamentForm(request.POST, instance=tournament)
@@ -197,7 +338,16 @@ def update_tournament(request, pk):
     return render(request, "update_tournament.html", {"form": form})
 
 
+@login_required
+@user_passes_test(is_superuser)
 def update_player(request, pk):
+    """
+    Updates a player with the given primary key, and then redirects to the player list page.
+
+    :param request: The HTTP request object.
+    :param pk: The primary key of the player to be updated.
+    :return: An HTTP response object redirecting to the player list page.
+    """
     player = Player.objects.get(pk=pk)
     if request.method == "POST":
         form = PlayerForm(request.POST, instance=player)
@@ -209,7 +359,19 @@ def update_player(request, pk):
     return render(request, "update_player.html", {"form": form})
 
 
+@login_required
+@user_passes_test(is_superuser)
 def update_match(request, pk):
+    """
+    Updates a match with the given primary key, and then redirects to the match list page.
+
+    Args:
+        request (HttpRequest): The request object.
+        pk (int): The primary key of the match to be updated.
+
+    Returns:
+        HttpResponse: The rendered page.
+    """
     match = Match.objects.get(pk=pk)
     if request.method == "POST":
         form = MatchForm(request.POST, instance=match)
@@ -221,7 +383,16 @@ def update_match(request, pk):
     return render(request, "update_match.html", {"form": form})
 
 
+@login_required
+@user_passes_test(is_superuser)
 def update_score(request, pk):
+    """
+    Updates a score with the given primary key, and then redirects to the score list page.
+
+    :param request: The HTTP request object.
+    :param pk: The primary key of the score to update.
+    :return: An HTTP response object redirecting to the score list page.
+    """
     score = Score.objects.get(pk=pk)
     if request.method == "POST":
         form = ScoreForm(request.POST, instance=score)
@@ -233,19 +404,44 @@ def update_score(request, pk):
     return render(request, "update_score.html", {"form": form})
 
 
+@login_required
+@user_passes_test(is_superuser)
 def delete_tournament(request, pk):
+    """
+    Deletes a tournament with the given primary key, and then redirects to the tournament list page.
+
+    :param request: The HTTP request object.
+    :param pk: The primary key of the tournament to delete.
+    :return: An HTTP response object redirecting to the tournament list page.
+    """
+
     tournament = Tournament.objects.get(pk=pk)
     tournament.delete()
     return redirect("tournaments")
 
 
+@login_required
+@user_passes_test(is_superuser)
 def delete_player(request, pk):
+    """
+    Deletes a player with the given primary key, and then redirects to the player list page.
+
+    :param request: The HTTP request object.
+    :param pk: The primary key of the player to delete.
+    :return: An HTTP response object redirecting to the player list page.
+    """
     player = Player.objects.get(pk=pk)
     player.delete()
     return redirect("players")
 
 
+@login_required
+@user_passes_test(is_superuser)
 def delete_match(request, pk):
+    """
+    Deletes a match with the given primary key, and then redirects to the tournament
+    detail page for the tournament that the match was part of.
+    """
     match = Match.objects.get(pk=pk)
     match.delete()
     tournament = match.tournament

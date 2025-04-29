@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="A score keeper for VR golf tournaments" />
+        <meta name="keywords" content="VR Golf Scores" />
+        <title>VR Score Keeper</title>
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
+        {% load static %}
+        <link rel="manifest" href="{% static 'manifest.json' %}" />
+        <link rel="shortcut icon"
+              type="image/png"
+              href="{% static 'img/icons/favicon.ico' %}" />
+    </head>
+    <body>
+        <div class="container">
+            <nav class="navbar is-transparent"
+                 role="navigation"
+                 aria-label="main navigation">
+                <div class="navbar-brand">
+                    <a href="{% url 'index' %}">
+                        <h1 class="navbar-item is-size-3 is-family-monospace has-text-link px-3">VR Tournament</h1>
+                    </a>
+                </div>
+            </nav>
+        </div>
+        <section class="section">
+            <div class="container">
+                {% block content %}
+                {% endblock content %}
+            </div>
+        </section>
+    </body>
+</html>
