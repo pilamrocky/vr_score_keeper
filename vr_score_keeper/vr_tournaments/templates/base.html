@@ -13,6 +13,38 @@
         <link rel="shortcut icon"
               type="image/png"
               href="{% static 'img/icons/favicon.ico' %}" />
+        <style>
+            .navbar-brand .navbar-item .vr-title {
+                font-weight: 700;
+                /* Bold */
+                /* Using is-family-sans-serif class for Bulma's default sans-serif font stack */
+                color: #55acee;
+                /* A vibrant blue, good for dark themes. Adjust if needed. */
+                text-shadow: 0 0 1px rgba(85, 172, 238, 0.7),
+                    /* Subtle glow effect */
+                    0 0 8px rgba(85, 172, 238, 0.5);
+                letter-spacing: 0.04em;
+                /* Adds a bit of spacing between letters */
+                transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
+                /* Smooth hover transition */
+                line-height: 1.2;
+                /* Ensures good vertical spacing, especially if text wraps */
+                /* The font size (e.g., is-size-3) will be applied directly as a class on the h1 element */
+            }
+
+            .navbar-brand .navbar-item:hover .vr-title {
+                color: #7dc0ff;
+                /* Brighter blue on hover */
+                text-shadow: 0 0 1px rgba(125, 192, 255, 0.9),
+                    /* Enhanced glow on hover */
+                    0 0 10px rgba(125, 192, 255, 0.7);
+            }
+
+            /* Ensure the navbar-brand anchor itself doesn't have default text decoration if not desired */
+            .navbar-brand>a.navbar-item {
+                text-decoration: none;
+            }
+        </style>
     </head>
     <body>
         <div class="container">
@@ -20,8 +52,10 @@
                  role="navigation"
                  aria-label="main navigation">
                 <div class="navbar-brand">
-                    <a href="{% url 'index' %}">
-                        <h1 class="navbar-item is-size-3 is-family-monospace has-text-link px-3">VR Tournament</h1>
+                    <a class="navbar-item" href="{% url 'index' %}">
+                        <!-- Applied new class 'vr-title', Bulma's font family, and size class -->
+                        <h1 class="vr-title is-size-2 is-family-sans-serif">VR Tournament</h1>
+                        <!-- Removed original: is-family-monospace, has-text-link, px-3 -->
                     </a>
                     <a role="button"
                        class="navbar-burger"
