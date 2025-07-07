@@ -1,6 +1,7 @@
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
+from django.http import HttpResponseNotAllowed
 from django.contrib import messages
 from .models import Tournament, Player, Match, Score
 from .forms import (
@@ -414,10 +415,12 @@ def delete_tournament(request, pk):
     :param pk: The primary key of the tournament to delete.
     :return: An HTTP response object redirecting to the tournament list page.
     """
+    if request.method == "POST":
+        tournament = Tournament.objects.get(pk=pk)
+        tournament.delete()
+        return redirect("tournaments")
 
-    tournament = Tournament.objects.get(pk=pk)
-    tournament.delete()
-    return redirect("tournaments")
+    return HttpResponseNotAllowed(["POST"])
 
 
 @login_required
@@ -430,9 +433,12 @@ def delete_player(request, pk):
     :param pk: The primary key of the player to delete.
     :return: An HTTP response object redirecting to the player list page.
     """
-    player = Player.objects.get(pk=pk)
-    player.delete()
-    return redirect("players")
+    if request.method == "POST":
+        player = Player.objects.get(pk=pk)
+        player.delete()
+        return redirect("players")
+
+    return HttpResponseNotAllowed(["POST"])
 
 
 @login_required
@@ -442,7 +448,10 @@ def delete_match(request, pk):
     Deletes a match with the given primary key, and then redirects to the tournament
     detail page for the tournament that the match was part of.
     """
-    match = Match.objects.get(pk=pk)
-    match.delete()
-    tournament = match.tournament
-    return redirect("tournament_detail", pk=tournament.pk)
+    if request.method == "POST":
+        match = Match.objects.get(pk=pk)
+        match.delete()
+        tournament = match.tournament
+        return redirect("tournament_detail", pk=tournament.pk)
+
+    return HttpResponseNotAllowed(["POST"])

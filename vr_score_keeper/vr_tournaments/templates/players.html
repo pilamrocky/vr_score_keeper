@@ -31,8 +31,10 @@
                 <tr>
                     <td>{{ player.name }}</td>
                     <td>
-                        <a href="{% url 'delete_player' pk=player.id %}"
-                           class="button is-danger is-outlined is-dark is-small">Delete</a>
+                        <form action="{% url 'delete_player' pk=player.id %}" method="post">
+                            {% csrf_token %}
+                            <button class="button is-danger is-outlined is-dark is-small" type="submit">Delete</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}
