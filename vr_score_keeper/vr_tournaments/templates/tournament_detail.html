@@ -21,8 +21,10 @@
                     {% for match in matches %}
                         <tr>
                             <td>
-                                <a href="{% url 'delete_match' match.pk %}"
-                                   class="button is-danger is-dark is-small is-outlined">{{ match.date|date:"m/d/y" }}</a>
+                                <form action="{% url 'delete_match' match.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="button is-danger is-dark is-small is-outlined" type="submit">{{ match.date|date:"m/d/y" }}</button>
+                                </form>
                             </td>
                             {% for player in registered_players %}
                                 {% for score in match.scores.all %}
@@ -59,6 +61,8 @@
             </table>
         </div>
     </div>
-    <a href="{% url 'delete_tournament' tournament.pk %}"
-       class="button is-danger is-outlined">DELETE</a>
+    <form action="{% url 'delete_tournament' tournament.pk %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="button is-danger is-outlined">DELETE</button>
+    </form>
 {% endblock content %}

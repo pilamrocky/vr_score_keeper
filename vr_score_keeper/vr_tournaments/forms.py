@@ -1,6 +1,17 @@
 from django import forms
+from django.contrib.auth.forms import PasswordChangeForm  # Keep existing forms
+from django.contrib.auth.models import User  # Import User model
 from django.core.exceptions import ValidationError
 from .models import Tournament, Player, Match, Score
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class TournamentForm(forms.ModelForm):

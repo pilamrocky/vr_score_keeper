@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="title is-3">My Profile</h1>
+
+    {# Display messages (like success/error after edit) #}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="notification {% if message.tags %}is-{{ message.tags }}{% else %}is-info{% endif %}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="content">
+        <p>
+            <strong>Username:</strong> {{ user.username }}
+        </p>
+        <p>
+            <strong>First Name:</strong> {{ user.first_name|default:"Not set" }}
+        </p>
+        <p>
+            <strong>Last Name:</strong> {{ user.last_name|default:"Not set" }}
+        </p>
+        <p>
+            <strong>Email:</strong> {{ user.email|default:"Not set" }}
+        </p>
+    </div>
+
+    <div class="buttons">
+        <a href="{% url 'profile_edit' %}" class="button is-link">Edit Profile</a>
+        {# Link to Django's built-in password change view #}
+        <a href="{% url 'password_change' %}" class="button is-warning">Change Password</a>
+    </div>
+{% endblock content %}

@@ -9,8 +9,42 @@
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" />
         {% load static %}
-        <link rel="manifest" href="{% static 'manifest.json' %}">
-        <link rel="shortcut icon" type="image/png" href="{% static 'img/icons/favicon.ico' %}" >
+        <link rel="manifest" href="{% static 'manifest.json' %}" />
+        <link rel="shortcut icon"
+              type="image/png"
+              href="{% static 'img/icons/favicon.ico' %}" />
+        <style>
+            .navbar-brand .navbar-item .vr-title {
+                font-weight: 700;
+                /* Bold */
+                /* Using is-family-sans-serif class for Bulma's default sans-serif font stack */
+                color: #55acee;
+                /* A vibrant blue, good for dark themes. Adjust if needed. */
+                text-shadow: 0 0 1px rgba(85, 172, 238, 0.7),
+                    /* Subtle glow effect */
+                    0 0 8px rgba(85, 172, 238, 0.5);
+                letter-spacing: 0.04em;
+                /* Adds a bit of spacing between letters */
+                transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
+                /* Smooth hover transition */
+                line-height: 1.2;
+                /* Ensures good vertical spacing, especially if text wraps */
+                /* The font size (e.g., is-size-3) will be applied directly as a class on the h1 element */
+            }
+
+            .navbar-brand .navbar-item:hover .vr-title {
+                color: #7dc0ff;
+                /* Brighter blue on hover */
+                text-shadow: 0 0 1px rgba(125, 192, 255, 0.9),
+                    /* Enhanced glow on hover */
+                    0 0 10px rgba(125, 192, 255, 0.7);
+            }
+
+            /* Ensure the navbar-brand anchor itself doesn't have default text decoration if not desired */
+            .navbar-brand>a.navbar-item {
+                text-decoration: none;
+            }
+        </style>
     </head>
     <body>
         <div class="container">
@@ -18,8 +52,10 @@
                  role="navigation"
                  aria-label="main navigation">
                 <div class="navbar-brand">
-                    <a href="{% url 'index' %}">
-                        <h1 class="navbar-item is-size-3 has-text-info px-6">VR Tournament</h1>
+                    <a class="navbar-item" href="{% url 'index' %}">
+                        <!-- Applied new class 'vr-title', Bulma's font family, and size class -->
+                        <h1 class="vr-title is-size-2 is-family-sans-serif">VR Tournament</h1>
+                        <!-- Removed original: is-family-monospace, has-text-link, px-3 -->
                     </a>
                     <a role="button"
                        class="navbar-burger"
@@ -36,8 +72,23 @@
                     <div class="navbar-end">
                         <div class="navbar-item">
                             <div class="buttons">
-                                <a class="button is-info" href="{% url 'players' %}">Players</a>
-                                <a class="button is-info" href="{% url 'tournaments' %}">Tournaments</a>
+                                {% if user.is_authenticated %}
+                                    {# Check if user is logged in #}
+                                    {% if user.is_superuser %}
+                                        <a class="button is-info" href="{% url 'players' %}">Players</a>
+                                    {% endif %}
+                                    <a class="button is-info" href="{% url 'tournaments' %}">Tournaments</a>
+                                    <a class="button is-light" href="{% url 'profile' %}">Profile: ({{ user.username }})</a>
+                                    {# Logout Form Start #}
+                                    <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="button is-danger">Logout</button>
+                                    </form>
+                                    {# Logout Form End #}
+                                {% else %}
+                                    {# Optionally add a login link if user is not logged in #}
+                                    <a class="button is-success" href="{% url 'login' %}">Login</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
