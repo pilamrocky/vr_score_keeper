@@ -7,13 +7,33 @@
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
 ARG PYTHON_VERSION=3.11.9
-FROM python:${PYTHON_VERSION}-slim AS base
+
+# --- Builder Stage ---
+FROM python:${PYTHON_VERSION}-slim AS builder
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
-
 # Keeps Python from buffering stdout and stderr to avoid situations where
 # the application crashes without emitting any logs due to buffering.
+ENV PYTHONUNBUFFERED=1
+
+# Install build-time dependencies
+RUN apt-get -y update && apt-get install -y --no-install-recommends python3-dev libpq-dev build-essential && rm -rf /var/lib/apt/lists/*
+
+# Create and activate virtual environment
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
+
+# --- Final Stage ---
+FROM python:${PYTHON_VERSION}-slim AS final
+
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
@@ -23,28 +43,33 @@ WORKDIR /app
 ARG UID=10001
 RUN adduser \
     --disabled-password \
-    --gecos "" \
+    --gecos "" \ 
     --home "/nonexistent" \
     --shell "/sbin/nologin" \
     --no-create-home \
     --uid "${UID}" \
     appuser
 
-RUN apt-get -y update && apt-get install -y --no-install-recommends python3-dev libpq-dev build-essential
+# Change ownership of the app directory to the new user before switching to them.
+RUN chown -R appuser:appuser /app
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
+# Install runtime dependencies for psycopg2
+RUN apt-get -y update && apt-get install -y --no-install-recommends libpq5 && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Activate virtual environment
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Switch to the non-privileged user to run the application.
 USER appuser
 
 # Copy the source code into the container.
 COPY . .
+
+# Script to run necessary start up commands for DB migration and static file collection.
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Expose the port that the application listens on.
 EXPOSE 8000
