@@ -1,0 +1,27 @@
+services:
+  web:
+    # For production, it's best to build your image, push it to a registry
+    # (like Docker Hub, GCR, or a private one), and reference it here.
+    # For example:
+    image: ghcr.io/pilamrocky/vr_score_keeper:latest
+    container_name: vr_score_keeper
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      # --- Django Settings ---
+      # Set the Django settings module to production.
+      - DJANGO_SETTINGS_MODULE=settings.settings.prod
+      # IMPORTANT: Set a strong, unique secret key in your Portainer environment.
+      - SECRET_KEY=
+      # Set to False in production for security.
+      - DJANGO_DEBUG=False
+      # Add your production domain name(s) here, comma-separated.
+      - DJANGO_ALLOWED_HOSTS=your-domain.com,www.your-domain.com
+      # Add your production domain name(s) here with scheme, comma-separated.
+      - DJANGO_CSRF_TRUSTED_ORIGINS=https://your-domain.com,https://www.your-domain.com
+
+      # --- Database Settings ---
+      # This should point to your existing PostgreSQL server and be set in Portainer.
+      # Example: postgres://vruser:vrpassword@postgres.example.com:5432/vrscorekeeper
+      - DATABASE_URL=

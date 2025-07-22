@@ -12,3 +12,6 @@ psycopg2==2.9.10
 
 #Whitenoise - Static Files
 whitenoise==6.9.0
+
+# Database URL parsing
+dj-database-url==3.0.1
