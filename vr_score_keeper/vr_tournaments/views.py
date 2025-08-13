@@ -8,7 +8,6 @@ from .forms import (
     TournamentForm,
     PlayerForm,
     MatchForm,
-    ScoreForm,
     MultiScoreForm,
     UserProfileForm,
 )
@@ -269,25 +268,6 @@ def create_tournament(request):
 
 @login_required
 @user_passes_test(is_superuser)
-def create_player(request):
-    """
-    Creates a new player.
-
-    :param request: The HTTP request object.
-    :return: An HTTP response object redirecting to the player list page.
-    """
-    if request.method == "POST":
-        form = PlayerForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("player_list")
-    else:
-        form = PlayerForm()
-    return render(request, "create_player.html", {"form": form})
-
-
-@login_required
-@user_passes_test(is_superuser)
 def create_match(request, tournament_pk):
     """
     Creates a new match for a given tournament.
@@ -329,93 +309,6 @@ def create_score(request, match_pk):
     else:
         form = MultiScoreForm(registered_players, match)
     return render(request, "create_score.html", {"form": form, "match": match})
-
-
-@login_required
-@user_passes_test(is_superuser)
-def update_tournament(request, pk):
-    """
-    Updates a tournament with the given primary key, and then redirects to the tournament list page.
-
-    :param request: The HTTP request object.
-    :param pk: The primary key of the tournament to be updated.
-    :return: An HTTP response object redirecting to the tournament list page.
-    """
-    tournament = Tournament.objects.get(pk=pk)
-    if request.method == "POST":
-        form = TournamentForm(request.POST, instance=tournament)
-        if form.is_valid():
-            form.save()
-            return redirect("tournament_list")
-    else:
-        form = TournamentForm(instance=tournament)
-    return render(request, "update_tournament.html", {"form": form})
-
-
-@login_required
-@user_passes_test(is_superuser)
-def update_player(request, pk):
-    """
-    Updates a player with the given primary key, and then redirects to the player list page.
-
-    :param request: The HTTP request object.
-    :param pk: The primary key of the player to be updated.
-    :return: An HTTP response object redirecting to the player list page.
-    """
-    player = Player.objects.get(pk=pk)
-    if request.method == "POST":
-        form = PlayerForm(request.POST, instance=player)
-        if form.is_valid():
-            form.save()
-            return redirect("player_list")
-    else:
-        form = PlayerForm(instance=player)
-    return render(request, "update_player.html", {"form": form})
-
-
-@login_required
-@user_passes_test(is_superuser)
-def update_match(request, pk):
-    """
-    Updates a match with the given primary key, and then redirects to the match list page.
-
-    Args:
-        request (HttpRequest): The request object.
-        pk (int): The primary key of the match to be updated.
-
-    Returns:
-        HttpResponse: The rendered page.
-    """
-    match = Match.objects.get(pk=pk)
-    if request.method == "POST":
-        form = MatchForm(request.POST, instance=match)
-        if form.is_valid():
-            form.save()
-            return redirect("match_list")
-    else:
-        form = MatchForm(instance=match)
-    return render(request, "update_match.html", {"form": form})
-
-
-@login_required
-@user_passes_test(is_superuser)
-def update_score(request, pk):
-    """
-    Updates a score with the given primary key, and then redirects to the score list page.
-
-    :param request: The HTTP request object.
-    :param pk: The primary key of the score to update.
-    :return: An HTTP response object redirecting to the score list page.
-    """
-    score = Score.objects.get(pk=pk)
-    if request.method == "POST":
-        form = ScoreForm(request.POST, instance=score)
-        if form.is_valid():
-            form.save()
-            return redirect("score_list")
-    else:
-        form = ScoreForm(instance=score)
-    return render(request, "update_score.html", {"form": form})
 
 
 @login_required
