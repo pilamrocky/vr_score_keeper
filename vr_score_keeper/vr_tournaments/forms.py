@@ -48,16 +48,6 @@ class MatchForm(forms.ModelForm):
         )
 
 
-class ScoreForm(forms.ModelForm):
-    class Meta:
-        model = Score
-        fields = (
-            "match",
-            "player",
-            "score",
-        )
-
-
 class MultiScoreForm(forms.Form):
     # scores = forms.CharField(widget=forms.HiddenInput())
 
