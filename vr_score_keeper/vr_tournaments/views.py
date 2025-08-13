@@ -13,10 +13,26 @@ from .forms import (
     UserProfileForm,
 )
 
+# Helper Functions
+
 
 def is_superuser(user):
     """Checks if the given user has superuser privileges."""
     return user.is_superuser
+
+
+def calculate_player_scores(tournament):
+    """Calculates the total score for each player in the given tournament."""
+    player_scores = []
+    for player in tournament.players.all():
+        total_score = (
+            player.scores.filter(match__tournament=tournament).aggregate(
+                total=Sum("score")
+            )["total"]
+            or 0
+        )
+        player_scores.append((player, total_score))
+    return player_scores
 
 
 @login_required
@@ -50,9 +66,9 @@ def profile_edit(request):
 ## INDEX ##
 @login_required
 def index(request):
-    # Get the latest tournament and all previous tournaments
+    # Get all current and previous tournaments
     """
-    Displays the index page with the latest tournament and all previous tournaments.
+    Displays the index page with the latest tournaments and all previous tournaments.
 
     The latest tournament's player scores are calculated, and the winner is determined
     if the score threshold is met. For each previous tournament, player scores are also
@@ -64,53 +80,50 @@ def index(request):
              and previous tournaments with their respective player scores.
     """
 
-    previous_tournaments = Tournament.objects.order_by("-date")[1:]
-    latest_tournament = Tournament.objects.order_by("-date").first()
+    # Get all active tournaments
+    active_tournaments = Tournament.objects.filter(winner="").order_by("-date")
+    previous_tournaments = Tournament.objects.exclude(winner="").order_by("-date")
 
-    # Calculate total scores for the latest tournament
-    latest_tournament_player_scores = []
-    if latest_tournament:
-        for player in latest_tournament.players.all():
-            total_score = (
-                player.scores.filter(match__tournament=latest_tournament).aggregate(
-                    total=Sum("score")
-                )["total"]
-                or 0
-            )
-            latest_tournament_player_scores.append((player, total_score))
+    # Calculate scores for active tournaments
+    active_tournament_data = []
+    for tournament in active_tournaments:
+        player_scores = calculate_player_scores(tournament)
 
-        # Determine the winner if there is one of the latest tournament
+        # Determine winner logic (if needed)
         winner = None
         max_score = 0
-        for player, score in latest_tournament_player_scores:
+        for player, score in player_scores:
             if score >= 30 and (winner is None or score > max_score):
                 winner = player
                 max_score = score
         if winner:
-            latest_tournament.winner = winner.name
-            latest_tournament.save()
+            tournament.winner = winner.name
+            tournament.save()
 
-    # Calculate total scores for previous tournaments
-    previous_tournament_player_scores = []
+        active_tournament_data.append(
+            {
+                "tournament": tournament,
+                "player_scores": player_scores,
+            }
+        )
+
+    # Calculate scores for previous tournaments
+    previous_tournament_data = []
     for tournament in previous_tournaments:
-        tournament_player_scores = []
-        for player in tournament.players.all():
-            total_score = (
-                player.scores.filter(match__tournament=tournament).aggregate(
-                    total=Sum("score")
-                )["total"]
-                or 0
-            )
-            tournament_player_scores.append((player, total_score))
-        previous_tournament_player_scores.append((tournament, tournament_player_scores))
+        player_scores = calculate_player_scores(tournament)
+        previous_tournament_data.append(
+            {
+                "tournament": tournament,
+                "player_scores": player_scores,
+            }
+        )
 
     return render(
         request,
         "index.html",
         {
-            "latest_tournament": latest_tournament,
-            "latest_tournament_player_scores": latest_tournament_player_scores,
-            "previous_tournament_player_scores": previous_tournament_player_scores,
+            "active_tournaments": active_tournament_data,
+            "previous_tournaments": previous_tournament_data,
         },
     )
 
@@ -312,7 +325,7 @@ def create_score(request, match_pk):
         form = MultiScoreForm(registered_players, match, request.POST)
         if form.is_valid():
             form.save()
-            return redirect("tournament_detail", pk=match.tournament.pk)
+            return redirect("index")
     else:
         form = MultiScoreForm(registered_players, match)
     return render(request, "create_score.html", {"form": form, "match": match})
