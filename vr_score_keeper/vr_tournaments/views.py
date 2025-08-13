@@ -13,10 +13,26 @@ from .forms import (
     UserProfileForm,
 )
 
+# Helper Functions
+
 
 def is_superuser(user):
     """Checks if the given user has superuser privileges."""
     return user.is_superuser
+
+
+def calculate_player_scores(tournament):
+    """Calculates the total score for each player in the given tournament."""
+    player_scores = []
+    for player in tournament.players.all():
+        total_score = (
+            player.scores.filter(match__tournament=tournament).aggregate(
+                total=Sum("score")
+            )["total"]
+            or 0
+        )
+        player_scores.append((player, total_score))
+    return player_scores
 
 
 @login_required
@@ -71,15 +87,7 @@ def index(request):
     # Calculate scores for active tournaments
     active_tournament_data = []
     for tournament in active_tournaments:
-        player_scores = []
-        for player in tournament.players.all():
-            total_score = (
-                player.scores.filter(match__tournament=tournament).aggregate(
-                    total=Sum("score")
-                )["total"]
-                or 0
-            )
-            player_scores.append((player, total_score))
+        player_scores = calculate_player_scores(tournament)
 
         # Determine winner logic (if needed)
         winner = None
@@ -102,15 +110,7 @@ def index(request):
     # Calculate scores for previous tournaments
     previous_tournament_data = []
     for tournament in previous_tournaments:
-        player_scores = []
-        for player in tournament.players.all():
-            total_score = (
-                player.scores.filter(match__tournament=tournament).aggregate(
-                    total=Sum("score")
-                )["total"]
-                or 0
-            )
-            player_scores.append((player, total_score))
+        player_scores = calculate_player_scores(tournament)
         previous_tournament_data.append(
             {
                 "tournament": tournament,
