@@ -16,11 +16,6 @@ class FormTests(TestCase):
 
     def test_match_form(self):
         tournament = Tournament.objects.create()
-        form_data = {"tournament": tournament.pk}
-        form = MatchForm(data=form_data)
-        # This test is expected to fail initially because the form requires a
-        # 'date' field, which is not provided in the form_data.
-        # Let's correct this by providing the date.
         form_data_with_date = {"tournament": tournament.pk, "date": "2024-01-01"}
         form = MatchForm(data=form_data_with_date)
         self.assertTrue(form.is_valid())

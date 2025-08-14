@@ -41,11 +41,10 @@ class MatchModelTest(TestCase):
 class ScoreModelTest(TestCase):
     def setUp(self):
         self.tournament = Tournament.objects.create()
-        self.player1 = Player.objects.create(name="Player 1")
+        self.player = Player.objects.create(name="Player 1")
         self.player2 = Player.objects.create(name="Player 2")
-        self.tournament.players.add(self.player1, self.player2)
+        self.tournament.players.add(self.player, self.player2)
         self.match = Match.objects.create(tournament=self.tournament)
-        self.player = Player.objects.create(name="Test Player")
 
     def test_score_creation(self):
         score = Score.objects.create(player=self.player, match=self.match, score=1)
@@ -55,7 +54,7 @@ class ScoreModelTest(TestCase):
 
     def test_score_str(self):
         score = Score.objects.create(player=self.player, match=self.match, score=10)
-        self.assertEqual(str(score), "Test Player - 10")
+        self.assertEqual(str(score), "Player 1 - 10")
 
     def test_score_validation(self):
         with self.assertRaises(ValidationError):
