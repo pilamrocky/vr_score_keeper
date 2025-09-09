@@ -19,10 +19,8 @@
                     {% for match in matches_on_date %}
                         <tr>
                             <th class="has-text-centered">{{ forloop.revcounter }}</th>
-                            {% for player in registered_players %}
-                                {% for score in match.scores.all %}
-                                    {% if score.player == player %}<td class="has-text-centered">{{ score.score }}</td>{% endif %}
-                                {% endfor %}
+                            {% for score in match.ordered_scores %}
+                                <td class="has-text-centered">{{ score|default:"" }}</td>
                             {% endfor %}
                             <td>
                                 <form id="form-{{ match.pk }}"

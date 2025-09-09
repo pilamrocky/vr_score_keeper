@@ -220,24 +220,32 @@ def tournament_detail(request, pk):
     """
     Displays the details of a tournament, including the registered players and matches.
 
+    This view pre-fetches related scores to prevent N+1 query issues and prepares
+    a list of ordered scores for each match to ensure correct rendering in the template.
+
     :param request: The HTTP request object.
     :param pk: The primary key of the tournament to be displayed.
     :return: An HTTP response object rendering the tournament detail page.
     """
-
     tournament = Tournament.objects.get(pk=pk)
-    registered_players = []
-    if hasattr(tournament, "players"):
-        registered_players = tournament.players.all()
+    registered_players = tournament.players.all()
 
-    # Get all matches for the tournament and order them by date and then by pk descending
-    matches = tournament.matches.all().order_by("-date", "-pk")
+    # Get all matches, prefetching scores to prevent N+1 queries.
+    matches = tournament.matches.prefetch_related("scores").order_by("-date", "-pk")
 
-    # Group matches by date
+    # Augment match objects with a list of scores ordered by registered_players.
+    # This fixes the rendering bug in the template and makes it more efficient.
+    matches_for_template = []
+    for match in matches:
+        scores_map = {score.player_id: score.score for score in match.scores.all()}
+        match.ordered_scores = [scores_map.get(p.id) for p in registered_players]
+        matches_for_template.append(match)
+
+    # Group matches by date.
     grouped_matches = []
-    for date, match_group in groupby(matches, key=lambda m: m.date):
-        match_list = list(match_group)
-        grouped_matches.append((date, match_list))
+    if matches_for_template:
+        for date, match_group in groupby(matches_for_template, key=lambda m: m.date):
+            grouped_matches.append((date, list(match_group)))
 
     return render(
         request,
