@@ -21,7 +21,7 @@
                     {% for match in matches %}
                         <tr>
                             <td>
-                                <form action="{% url 'delete_match' match.pk %}" method="post">
+                                <form action="{% url 'delete_match' match.pk %}" method="post" onsubmit="return confirm('Are you sure you want to delete this match?');">
                                     {% csrf_token %}
                                     <button class="button is-danger is-dark is-small is-outlined" type="submit">{{ match.date|date:"m/d/y" }}</button>
                                 </form>
