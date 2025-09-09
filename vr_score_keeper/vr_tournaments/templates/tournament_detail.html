@@ -27,7 +27,9 @@
                                 <button class="button is-danger is-dark is-outlined is-small js-modal-trigger"
                                         type="button"
                                         data-target="delete-modal"
-                                        data-form-id="form-{{ match.pk }}">
+                                        data-form-id="form-{{ match.pk }}"
+                                        data-modal-title="Delete Match"
+                                        data-modal-body="Are you sure you want to delete this match?">
                                     <span class="icon">
                                         <i class="fas fa-trash"></i>
                                     </span>
@@ -53,19 +55,25 @@
         </tbody>
     </table>
 
-    <form action="{% url 'delete_tournament' tournament.pk %}" method="post">
+    <form id="delete-tournament-form" action="{% url 'delete_tournament' tournament.pk %}" method="post">
         {% csrf_token %}
-        <button type="submit" class="button is-danger is-outlined">DELETE</button>
+        <button class="button is-danger is-outlined js-modal-trigger"
+                type="button"
+                data-target="delete-modal"
+                data-form-id="delete-tournament-form"
+                data-modal-title="Delete Tournament"
+                data-modal-body="Are you sure you want to delete this tournament? This action cannot be undone.">
+            DELETE
+        </button>
     </form>
 
     <div id="delete-modal" class="modal">
         <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
-                <p class="modal-card-title">Delete Match</p>
+                <p class="modal-card-title"></p>
             </header>
             <section class="modal-card-body">
-                Are you sure you want to delete this match?
             </section>
             <footer class="modal-card-foot">
                 <div class="buttons">
@@ -99,9 +107,13 @@
             (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
                 const modalId = $trigger.dataset.target;
                 const $target = document.getElementById(modalId);
+                const modalTitle = $trigger.dataset.modalTitle;
+                const modalBody = $trigger.dataset.modalBody;
 
                 $trigger.addEventListener('click', () => {
                     formIdToSubmit = $trigger.dataset.formId;
+                    $target.querySelector('.modal-card-title').textContent = modalTitle;
+                    $target.querySelector('.modal-card-body').textContent = modalBody;
                     openModal($target);
                 });
             });
