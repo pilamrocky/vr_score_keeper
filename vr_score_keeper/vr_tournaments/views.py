@@ -1,3 +1,4 @@
+from itertools import groupby
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
@@ -219,20 +220,32 @@ def tournament_detail(request, pk):
     """
     Displays the details of a tournament, including the registered players and matches.
 
+    This view pre-fetches related scores to prevent N+1 query issues and prepares
+    a list of ordered scores for each match to ensure correct rendering in the template.
+
     :param request: The HTTP request object.
     :param pk: The primary key of the tournament to be displayed.
     :return: An HTTP response object rendering the tournament detail page.
     """
-
     tournament = Tournament.objects.get(pk=pk)
-    tournament_matches = []
+    registered_players = tournament.players.all()
 
-    if hasattr(tournament, "matches"):
-        tournament_matches = tournament.matches.all().order_by("-date")
-    registered_players = []
+    # Get all matches, prefetching scores to prevent N+1 queries.
+    matches = tournament.matches.prefetch_related("scores").order_by("-date", "-pk")
 
-    if hasattr(tournament, "players"):
-        registered_players = tournament.players.all()
+    # Augment match objects with a list of scores ordered by registered_players.
+    # This fixes the rendering bug in the template and makes it more efficient.
+    matches_for_template = []
+    for match in matches:
+        scores_map = {score.player_id: score.score for score in match.scores.all()}
+        match.ordered_scores = [scores_map.get(p.id) for p in registered_players]
+        matches_for_template.append(match)
+
+    # Group matches by date.
+    grouped_matches = []
+    if matches_for_template:
+        for date, match_group in groupby(matches_for_template, key=lambda m: m.date):
+            grouped_matches.append((date, list(match_group)))
 
     return render(
         request,
@@ -240,7 +253,7 @@ def tournament_detail(request, pk):
         {
             "tournament": tournament,
             "registered_players": registered_players,
-            "matches": tournament_matches,
+            "grouped_matches": grouped_matches,
         },
     )
 

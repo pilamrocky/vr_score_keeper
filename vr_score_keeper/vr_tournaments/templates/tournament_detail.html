@@ -3,69 +3,56 @@
 {% block content %}
     <div class="title">{{ tournament.name }}</div>
     <div class="subtitle">{{ tournament.date }}</div>
-    <div class="card">
-        <header class="card-header">
-            <p class="card-header-title">Matches</p>
-            <p class="card-header-title is-pulled-right">
-                <a href="{% url 'create_match' tournament.pk %}" class="button is-small">New Match</a>
-            </p>
+    {% for date, matches_on_date in grouped_matches %}
+        <p>
+            <span class="is-size-6 has-text-weight-semibold">Date:</span>
+            <span class="is-size-7">{{ date|date:"m/d/Y" }}</span>
+        </p>
+        <table class="table is-fullwidth is-narrow is-striped">
+            <thead>
+                <th class="is-size-7">Match</th>
+                {% for player in registered_players %}<th class="is-size-7">{{ player }}</th>{% endfor %}
+                <th class="is-size-7">Delete</th>
+            </thead>
+            <tbody>
+                {% for match in matches_on_date %}
+                    <tr>
+                        <th class="has-text-centered has-text-link">{{ forloop.revcounter }}</th>
+                        {% for score in match.ordered_scores %}<td class="has-text-centered">{{ score|default:"" }}</td>{% endfor %}
+                        <td>
+                            <form id="form-{{ match.pk }}"
+                                  action="{% url 'delete_match' match.pk %}"
+                                  method="post">
+                                {% csrf_token %}
+                                <button class="button is-danger is-dark is-outlined is-small js-modal-trigger"
+                                        type="button"
+                                        data-target="delete-modal"
+                                        data-form-id="form-{{ match.pk }}">
+                                    <span class="icon">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
 
-        </header>
-        <div class="card-content py-1">
-            <table class="table is-fullwidth">
-                <thead>
-                    <th class="is-size-7">Date</th>
-                    {% for player in registered_players %}<th class="is-size-7">{{ player }}</th>{% endfor %}
-                </thead>
-                <tbody>
-                    {% for match in matches %}
-                        <tr>
-                            <td>
-                                <form id="form-{{ match.pk }}"
-                                      action="{% url 'delete_match' match.pk %}"
-                                      method="post">
-                                    {% csrf_token %}
-                                    <button class="button is-danger is-dark is-small is-outlined js-modal-trigger"
-                                            type="button"
-                                            data-target="delete-modal"
-                                            data-form-id="form-{{ match.pk }}">{{ match.date|date:"m/d/y" }}</button>
-                                </form>
-                            </td>
-                            {% for player in registered_players %}
-                                {% for score in match.scores.all %}
-                                    {% if score.player == player %}<td class="has-text-centered">{{ score.score }}</td>{% endif %}
-                                {% endfor %}
-                            {% endfor %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="card">
-        <header class="card-header">
-            <p class="card-header-title">Registered</p>
-            <p class="card-header-title is-pulled-right">
-                <a href="{% url 'tournament_registration' tournament.pk %}"
-                   class="button is-small">Register Players</a>
-            </p>
+    <table class="table is-fullwidth">
+        <thead>
+            <th>Players</th>
+        </thead>
+        <tbody>
+            {% for player in registered_players %}
+                <tr>
+                    <td>{{ player.name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-        </header>
-        <div class="card-content py-1">
-            <table class="table is-fullwidth">
-                <thead>
-                    <th>Player</th>
-                </thead>
-                <tbody>
-                    {% for player in registered_players %}
-                        <tr>
-                            <td>{{ player.name }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
     <form action="{% url 'delete_tournament' tournament.pk %}" method="post">
         {% csrf_token %}
         <button type="submit" class="button is-danger is-outlined">DELETE</button>
