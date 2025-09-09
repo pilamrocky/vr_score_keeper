@@ -17,7 +17,7 @@
             <tbody>
                 {% for match in matches_on_date %}
                     <tr>
-                        <th class="has-text-centered has-text-link">{{ forloop.revcounter }}</th>
+                        <th class="has-text-centered has-text-link">{{ forloop.counter }}</th>
                         {% for score in match.ordered_scores %}<td class="has-text-centered">{{ score|default:"" }}</td>{% endfor %}
                         <td>
                             <form id="form-{{ match.pk }}"
@@ -55,7 +55,9 @@
         </tbody>
     </table>
 
-    <form id="delete-tournament-form" action="{% url 'delete_tournament' tournament.pk %}" method="post">
+    <form id="delete-tournament-form"
+          action="{% url 'delete_tournament' tournament.pk %}"
+          method="post">
         {% csrf_token %}
         <button class="button is-danger is-outlined js-modal-trigger"
                 type="button"
