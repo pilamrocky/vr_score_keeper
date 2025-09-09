@@ -3,44 +3,48 @@
 {% block content %}
     <div class="title">{{ tournament.name }}</div>
     <div class="subtitle">{{ tournament.date }}</div>
-    <p>
-        <span class="is-size-6 has-text-weight-semibold">Date:</span>
-        <span class="is-size-7">08/13/2025</span>
-    </p>
-    <table class="table is-fullwidth is-narrow is-striped">
-        <thead>
-            <th class="is-size-7">Match</th>
-            {% for player in registered_players %}<th class="is-size-7">{{ player }}</th>{% endfor %}
-            <th class="is-size-7">Delete</th>
-        </thead>
-        <tbody>
-            {% for match in matches %}
-                <tr>
-                    <th class="has-text-centered">7</th>
-                    {% for player in registered_players %}
-                        {% for score in match.scores.all %}
-                            {% if score.player == player %}<td class="has-text-centered">{{ score.score }}</td>{% endif %}
-                        {% endfor %}
+    {% for date, matches_on_date in grouped_matches %}
+        <p>
+            <span class="is-size-6 has-text-weight-semibold">Date:</span>
+            <span class="is-size-7">{{ date|date:"m/d/Y" }}</span>
+        </p>
+        <table class="table is-fullwidth is-narrow is-striped">
+            <thead>
+                <th class="is-size-7">Match</th>
+                {% for player in registered_players %}<th class="is-size-7">{{ player }}</th>{% endfor %}
+                <th class="is-size-7">Delete</th>
+            </thead>
+            <tbody>
+                {% with matches_on_date|length as total_matches %}
+                    {% for match in matches_on_date %}
+                        <tr>
+                            <th class="has-text-centered">{{ forloop.revcounter }}</th>
+                            {% for player in registered_players %}
+                                {% for score in match.scores.all %}
+                                    {% if score.player == player %}<td class="has-text-centered">{{ score.score }}</td>{% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                            <td>
+                                <form id="form-{{ match.pk }}"
+                                      action="{% url 'delete_match' match.pk %}"
+                                      method="post">
+                                    {% csrf_token %}
+                                    <button class="button is-danger is-dark is-outlined is-small js-modal-trigger"
+                                            type="button"
+                                            data-target="delete-modal"
+                                            data-form-id="form-{{ match.pk }}">
+                                        <span class="icon">
+                                            <i class="fas fa-trash"></i>
+                                        </span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
                     {% endfor %}
-                    <td>
-                        <form id="form-{{ match.pk }}"
-                              action="{% url 'delete_match' match.pk %}"
-                              method="post">
-                            {% csrf_token %}
-                            <button class="button is-danger is-dark is-outlined is-small js-modal-trigger"
-                                    type="button"
-                                    data-target="delete-modal"
-                                    data-form-id="form-{{ match.pk }}">
-                                <span class="icon">
-                                    <i class="fas fa-trash"></i>
-                                </span>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% endwith %}
+            </tbody>
+        </table>
+    {% endfor %}
 
     <table class="table is-fullwidth">
         <thead>

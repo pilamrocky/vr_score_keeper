@@ -1,3 +1,4 @@
+from itertools import groupby
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
@@ -225,14 +226,18 @@ def tournament_detail(request, pk):
     """
 
     tournament = Tournament.objects.get(pk=pk)
-    tournament_matches = []
-
-    if hasattr(tournament, "matches"):
-        tournament_matches = tournament.matches.all().order_by("-date")
     registered_players = []
-
     if hasattr(tournament, "players"):
         registered_players = tournament.players.all()
+
+    # Get all matches for the tournament and order them by date and then by pk descending
+    matches = tournament.matches.all().order_by("-date", "-pk")
+
+    # Group matches by date
+    grouped_matches = []
+    for date, match_group in groupby(matches, key=lambda m: m.date):
+        match_list = list(match_group)
+        grouped_matches.append((date, match_list))
 
     return render(
         request,
@@ -240,7 +245,7 @@ def tournament_detail(request, pk):
         {
             "tournament": tournament,
             "registered_players": registered_players,
-            "matches": tournament_matches,
+            "grouped_matches": grouped_matches,
         },
     )
 
