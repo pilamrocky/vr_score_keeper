@@ -17,10 +17,8 @@
             <tbody>
                 {% for match in matches_on_date %}
                     <tr>
-                        <th class="has-text-centered">{{ forloop.revcounter }}</th>
-                        {% for score in match.ordered_scores %}
-                            <td class="has-text-centered">{{ score|default:"" }}</td>
-                        {% endfor %}
+                        <th class="has-text-centered has-text-link">{{ forloop.revcounter }}</th>
+                        {% for score in match.ordered_scores %}<td class="has-text-centered">{{ score|default:"" }}</td>{% endfor %}
                         <td>
                             <form id="form-{{ match.pk }}"
                                   action="{% url 'delete_match' match.pk %}"
