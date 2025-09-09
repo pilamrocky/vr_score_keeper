@@ -21,9 +21,14 @@
                     {% for match in matches %}
                         <tr>
                             <td>
-                                <form action="{% url 'delete_match' match.pk %}" method="post">
+                                <form id="form-{{ match.pk }}"
+                                      action="{% url 'delete_match' match.pk %}"
+                                      method="post">
                                     {% csrf_token %}
-                                    <button class="button is-danger is-dark is-small is-outlined" type="submit">{{ match.date|date:"m/d/y" }}</button>
+                                    <button class="button is-danger is-dark is-small is-outlined js-modal-trigger"
+                                            type="button"
+                                            data-target="delete-modal"
+                                            data-form-id="form-{{ match.pk }}">{{ match.date|date:"m/d/y" }}</button>
                                 </form>
                             </td>
                             {% for player in registered_players %}
@@ -65,4 +70,77 @@
         {% csrf_token %}
         <button type="submit" class="button is-danger is-outlined">DELETE</button>
     </form>
+
+    <div id="delete-modal" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Delete Match</p>
+            </header>
+            <section class="modal-card-body">
+                Are you sure you want to delete this match?
+            </section>
+            <footer class="modal-card-foot">
+                <div class="buttons">
+                    <button id="delete-confirm-button" class="button is-danger">Delete</button>
+                    <button class="button cancel-button">Cancel</button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let formIdToSubmit = null;
+
+            // Functions to open and close a modal
+            function openModal($el) {
+                $el.classList.add('is-active');
+            }
+
+            function closeModal($el) {
+                $el.classList.remove('is-active');
+            }
+
+            function closeAllModals() {
+                (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                    closeModal($modal);
+                });
+            }
+
+            // Add a click event on buttons to open a specific modal
+            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+                const modalId = $trigger.dataset.target;
+                const $target = document.getElementById(modalId);
+
+                $trigger.addEventListener('click', () => {
+                    formIdToSubmit = $trigger.dataset.formId;
+                    openModal($target);
+                });
+            });
+
+            // Add a click event on various child elements to close the parent modal
+            (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .cancel-button') || []).forEach(($close) => {
+                const $target = $close.closest('.modal');
+
+                $close.addEventListener('click', () => {
+                    closeModal($target);
+                });
+            });
+
+            // Add a keyboard event to close all modals
+            document.addEventListener('keydown', (event) => {
+                if (event.key === "Escape") {
+                    closeAllModals();
+                }
+            });
+
+            // Add a click event to the confirm delete button
+            document.getElementById('delete-confirm-button').addEventListener('click', () => {
+                if (formIdToSubmit) {
+                    document.getElementById(formIdToSubmit).submit();
+                }
+            });
+        });
+    </script>
 {% endblock content %}
