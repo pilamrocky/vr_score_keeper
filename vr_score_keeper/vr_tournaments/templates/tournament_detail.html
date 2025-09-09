@@ -15,31 +15,29 @@
                 <th class="is-size-7">Delete</th>
             </thead>
             <tbody>
-                {% with matches_on_date|length as total_matches %}
-                    {% for match in matches_on_date %}
-                        <tr>
-                            <th class="has-text-centered">{{ forloop.revcounter }}</th>
-                            {% for score in match.ordered_scores %}
-                                <td class="has-text-centered">{{ score|default:"" }}</td>
-                            {% endfor %}
-                            <td>
-                                <form id="form-{{ match.pk }}"
-                                      action="{% url 'delete_match' match.pk %}"
-                                      method="post">
-                                    {% csrf_token %}
-                                    <button class="button is-danger is-dark is-outlined is-small js-modal-trigger"
-                                            type="button"
-                                            data-target="delete-modal"
-                                            data-form-id="form-{{ match.pk }}">
-                                        <span class="icon">
-                                            <i class="fas fa-trash"></i>
-                                        </span>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% endwith %}
+                {% for match in matches_on_date %}
+                    <tr>
+                        <th class="has-text-centered">{{ forloop.revcounter }}</th>
+                        {% for score in match.ordered_scores %}
+                            <td class="has-text-centered">{{ score|default:"" }}</td>
+                        {% endfor %}
+                        <td>
+                            <form id="form-{{ match.pk }}"
+                                  action="{% url 'delete_match' match.pk %}"
+                                  method="post">
+                                {% csrf_token %}
+                                <button class="button is-danger is-dark is-outlined is-small js-modal-trigger"
+                                        type="button"
+                                        data-target="delete-modal"
+                                        data-form-id="form-{{ match.pk }}">
+                                    <span class="icon">
+                                        <i class="fas fa-trash"></i>
+                                    </span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     {% endfor %}
