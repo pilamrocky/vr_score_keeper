@@ -37,10 +37,10 @@
       {% endif %}
 
       <!--Score Table-->
-      <table class="table is-fullwidth">
+      <table class="table is-fullwidth has-text-centered">
         <thead>
-          <th class="is-size-7">Date</th>
-          {% for player in tournament.players.all %}<th class="is-size-7">{{ player }}</th>{% endfor %}
+          <th class="is-size-7 has-text-centered">Date</th>
+          {% for player in tournament.players.all %}<th class="is-size-7 has-text-centered">{{ player }}</th>{% endfor %}
         </thead>
         <tbody>
           {% for match in tournament.matches.all %}

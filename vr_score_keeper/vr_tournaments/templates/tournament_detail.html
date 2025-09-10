@@ -10,21 +10,21 @@
         </p>
         <table class="table is-fullwidth is-narrow is-striped">
             <thead>
-                <th class="is-size-7">Match</th>
-                {% for player in registered_players %}<th class="is-size-7">{{ player }}</th>{% endfor %}
-                <th class="is-size-7">Delete</th>
+                <th class="is-size-7 has-text-centered">Match</th>
+                {% for player in registered_players %}<th class="is-size-7 has-text-centered">{{ player }}</th>{% endfor %}
+                <th class="is-size-7 has-text-centered">Delete</th>
             </thead>
             <tbody>
                 {% for match in matches_on_date %}
                     <tr>
                         <th class="has-text-centered has-text-link">{{ forloop.counter }}</th>
                         {% for score in match.ordered_scores %}<td class="has-text-centered">{{ score|default:"" }}</td>{% endfor %}
-                        <td>
+                        <td class="has-text-centered">
                             <form id="form-{{ match.pk }}"
                                   action="{% url 'delete_match' match.pk %}"
                                   method="post">
                                 {% csrf_token %}
-                                <button class="button is-danger is-dark is-outlined is-small js-modal-trigger"
+                                <button class="button is-danger is-dark is-outlined is-small has-text-centered js-modal-trigger"
                                         type="button"
                                         data-target="delete-modal"
                                         data-form-id="form-{{ match.pk }}"
