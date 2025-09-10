@@ -1,3 +1,4 @@
+import logging
 from itertools import groupby
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -12,6 +13,8 @@ from .forms import (
     MultiScoreForm,
     UserProfileForm,
 )
+
+logger = logging.getLogger(__name__)
 
 # Helper Functions
 
@@ -150,7 +153,8 @@ def players(request):
     if request.method == "POST":
         form = PlayerForm(request.POST)
         if form.is_valid():
-            form.save()
+            player = form.save()
+            logger.info(f"User '{request.user.username}' created player '{player.name}'.")
             return render(
                 request, "players.html", {"players": current_players, "form": form}
             )
@@ -272,8 +276,9 @@ def create_tournament(request):
     if request.method == "POST":
         form = TournamentForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("tournament_registration", pk=form.instance.pk)
+            tournament = form.save()
+            logger.info(f"User '{request.user.username}' created tournament '{tournament.name}'.")
+            return redirect("tournament_registration", pk=tournament.pk)
     else:
         form = TournamentForm()
     return render(request, "create_tournament.html", {"form": form})
@@ -293,8 +298,11 @@ def create_match(request, tournament_pk):
     if request.method == "POST":
         form = MatchForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("create_score", match_pk=form.instance.pk)
+            match = form.save(commit=False)
+            match.tournament = tournament
+            match.save()
+            logger.info(f"User '{request.user.username}' created match {match.id} for tournament '{tournament.name}'.")
+            return redirect("create_score", match_pk=match.pk)
     else:
         form = MatchForm()
     return render(
@@ -317,7 +325,9 @@ def create_score(request, match_pk):
     if request.method == "POST":
         form = MultiScoreForm(registered_players, match, request.POST)
         if form.is_valid():
-            form.save()
+            scores = form.save()
+            score_details = ", ".join([f"{score.player.name}: {score.score}" for score in scores])
+            logger.info(f"User '{request.user.username}' added scores for match {match.id} in tournament '{match.tournament.name}'. Scores: {score_details}.")
             return redirect("index")
     else:
         form = MultiScoreForm(registered_players, match)
@@ -336,6 +346,7 @@ def delete_tournament(request, pk):
     """
     if request.method == "POST":
         tournament = Tournament.objects.get(pk=pk)
+        logger.info(f"User '{request.user.username}' deleted tournament '{tournament.name}'.")
         tournament.delete()
         return redirect("tournaments")
 
@@ -354,6 +365,7 @@ def delete_player(request, pk):
     """
     if request.method == "POST":
         player = Player.objects.get(pk=pk)
+        logger.info(f"User '{request.user.username}' deleted player '{player.name}'.")
         player.delete()
         return redirect("players")
 
@@ -369,8 +381,11 @@ def delete_match(request, pk):
     """
     if request.method == "POST":
         match = Match.objects.get(pk=pk)
-        match.delete()
+        scores = Score.objects.filter(match=match)
+        score_details = ", ".join([f"{score.player.name}: {score.score}" for score in scores])
+        logger.info(f"User '{request.user.username}' deleted match {match.id} from tournament '{match.tournament.name}'. Scores: {score_details}.")
         tournament = match.tournament
+        match.delete()
         return redirect("tournament_detail", pk=tournament.pk)
 
     return HttpResponseNotAllowed(["POST"])
