@@ -52,3 +52,8 @@ class MatchAdmin(admin.ModelAdmin):
 class ScoreAdmin(admin.ModelAdmin):
     list_display = ('player', 'match', 'score')
     list_filter = ('match__tournament', 'player')
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.select_related('player', 'match__tournament')
+        return queryset
