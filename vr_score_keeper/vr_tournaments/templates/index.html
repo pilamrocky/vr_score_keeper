@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load user_tags %}
+
 {% block content %}
 
   {% if active_tournaments %}
@@ -34,7 +36,7 @@
               </table>
             </div>
           </div>
-          {% if user.is_superuser %}
+          {% if user|has_group:"powerUser" %}
             <footer class="card-footer">
               <a href="{% url 'tournament_detail' tournament.pk %}"
                  class="card-footer-item">Details</a>
