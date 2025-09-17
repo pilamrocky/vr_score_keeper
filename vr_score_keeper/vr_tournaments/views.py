@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
 from django.http import HttpResponseNotAllowed
 from django.contrib import messages
-from .models import Tournament, Player, Match
+from .models import Tournament, Player, Match, Score
 from .forms import (
     TournamentForm,
     PlayerForm,
@@ -16,6 +16,7 @@ from .forms import (
 
 logger = logging.getLogger(__name__)
 
+
 # Helper Functions
 def is_superuser(user):
     """Checks if the given user has superuser privileges."""
@@ -24,9 +25,7 @@ def is_superuser(user):
 
 def is_poweruser(user):
     """Checks if the given user has poweruser privileges."""
-    if user.groups.filter(name="powerUser").exists() or user.is_superuser:
-        return True
-    return False
+    return user.groups.filter(name="powerUser").exists() or user.is_superuser
 
 
 def calculate_player_scores(tournament):
@@ -159,7 +158,9 @@ def players(request):
         form = PlayerForm(request.POST)
         if form.is_valid():
             player = form.save()
-            logger.info(f"User '{request.user.username}' created player '{player.name}'.")
+            logger.info(
+                f"User '{request.user.username}' created player '{player.name}'."
+            )
             return render(
                 request, "players.html", {"players": current_players, "form": form}
             )
@@ -282,7 +283,9 @@ def create_tournament(request):
         form = TournamentForm(request.POST)
         if form.is_valid():
             tournament = form.save()
-            logger.info(f"User '{request.user.username}' created tournament '{tournament.name}'.")
+            logger.info(
+                f"User '{request.user.username}' created tournament '{tournament.name}'."
+            )
             return redirect("tournament_registration", pk=tournament.pk)
     else:
         form = TournamentForm()
@@ -306,7 +309,9 @@ def create_match(request, tournament_pk):
             match = form.save(commit=False)
             match.tournament = tournament
             match.save()
-            logger.info(f"User '{request.user.username}' created match {match.id} for tournament '{tournament.name}'.")
+            logger.info(
+                f"User '{request.user.username}' created match {match.id} for tournament '{tournament.name}'."
+            )
             return redirect("create_score", match_pk=match.pk)
     else:
         form = MatchForm()
@@ -331,8 +336,12 @@ def create_score(request, match_pk):
         form = MultiScoreForm(registered_players, match, request.POST)
         if form.is_valid():
             scores = form.save()
-            score_details = ", ".join([f"{score.player.name}: {score.score}" for score in scores])
-            logger.info(f"User '{request.user.username}' added scores for match {match.id} in tournament '{match.tournament.name}'. Scores: {score_details}.")
+            score_details = ", ".join(
+                [f"{score.player.name}: {score.score}" for score in scores]
+            )
+            logger.info(
+                f"User '{request.user.username}' added scores for match {match.id} in tournament '{match.tournament.name}'. Scores: {score_details}."
+            )
             return redirect("index")
     else:
         form = MultiScoreForm(registered_players, match)
@@ -351,7 +360,9 @@ def delete_tournament(request, pk):
     """
     if request.method == "POST":
         tournament = Tournament.objects.get(pk=pk)
-        logger.info(f"User '{request.user.username}' deleted tournament '{tournament.name}'.")
+        logger.info(
+            f"User '{request.user.username}' deleted tournament '{tournament.name}'."
+        )
         tournament.delete()
         return redirect("tournaments")
 
@@ -387,8 +398,12 @@ def delete_match(request, pk):
     if request.method == "POST":
         match = Match.objects.get(pk=pk)
         scores = Score.objects.filter(match=match)
-        score_details = ", ".join([f"{score.player.name}: {score.score}" for score in scores])
-        logger.info(f"User '{request.user.username}' deleted match {match.id} from tournament '{match.tournament.name}'. Scores: {score_details}.")
+        score_details = ", ".join(
+            [f"{score.player.name}: {score.score}" for score in scores]
+        )
+        logger.info(
+            f"User '{request.user.username}' deleted match {match.id} from tournament '{match.tournament.name}'. Scores: {score_details}."
+        )
         tournament = match.tournament
         match.delete()
         return redirect("tournament_detail", pk=tournament.pk)
