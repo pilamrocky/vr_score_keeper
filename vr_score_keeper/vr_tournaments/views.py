@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
 from django.http import HttpResponseNotAllowed
 from django.contrib import messages
-from .models import Tournament, Player, Match, Score
+from .models import Tournament, Player, Match
 from .forms import (
     TournamentForm,
     PlayerForm,
@@ -13,12 +13,18 @@ from .forms import (
     UserProfileForm,
 )
 
+
 # Helper Functions
-
-
 def is_superuser(user):
     """Checks if the given user has superuser privileges."""
     return user.is_superuser
+
+
+def is_poweruser(user):
+    """Checks if the given user has poweruser privileges."""
+    if user.groups.filter(name="powerUser").exists() or user.is_superuser:
+        return True
+    return False
 
 
 def calculate_player_scores(tournament):
@@ -128,7 +134,7 @@ def index(request):
     )
 
 
-## PLAYERS ##
+# PLAYERS #
 @login_required
 @user_passes_test(is_superuser)
 def players(request):
@@ -158,7 +164,7 @@ def players(request):
     return render(request, "players.html", {"players": current_players, "form": form})
 
 
-## TOURNAMENTS ##
+# TOURNAMENTS #
 @login_required
 def tournaments(request):
     """
@@ -174,7 +180,7 @@ def tournaments(request):
     )
 
 
-## TOURNAMENT REGISTRATION ##
+# TOURNAMENT REGISTRATION #
 @login_required
 @user_passes_test(is_superuser)
 def tournament_registration(request, pk):
@@ -213,9 +219,9 @@ def tournament_registration(request, pk):
     )
 
 
-## TOURNAMENT DETAIL ##
+# TOURNAMENT DETAIL #
 @login_required
-@user_passes_test(is_superuser)
+@user_passes_test(is_poweruser)
 def tournament_detail(request, pk):
     """
     Displays the details of a tournament, including the registered players and matches.
@@ -259,7 +265,7 @@ def tournament_detail(request, pk):
 
 
 @login_required
-@user_passes_test(is_superuser)
+@user_passes_test(is_poweruser)
 def create_tournament(request):
     """
     Creates a new tournament and redirects to the tournament registration page.
@@ -280,7 +286,7 @@ def create_tournament(request):
 
 
 @login_required
-@user_passes_test(is_superuser)
+@user_passes_test(is_poweruser)
 def create_match(request, tournament_pk):
     """
     Creates a new match for a given tournament.
@@ -303,7 +309,7 @@ def create_match(request, tournament_pk):
 
 
 @login_required
-@user_passes_test(is_superuser)
+@user_passes_test(is_poweruser)
 def create_score(request, match_pk):
     """
     Creates scores for a match.
@@ -361,7 +367,7 @@ def delete_player(request, pk):
 
 
 @login_required
-@user_passes_test(is_superuser)
+@user_passes_test(is_poweruser)
 def delete_match(request, pk):
     """
     Deletes a match with the given primary key, and then redirects to the tournament
