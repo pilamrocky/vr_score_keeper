@@ -1,3 +1,4 @@
+import logging
 from itertools import groupby
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -12,6 +13,8 @@ from .forms import (
     MultiScoreForm,
     UserProfileForm,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # Helper Functions
@@ -69,7 +72,7 @@ def profile_edit(request):
     )  # Use app-specific template path
 
 
-## INDEX ##
+# INDEX #
 @login_required
 def index(request):
     # Get all current and previous tournaments
