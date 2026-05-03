@@ -3,7 +3,7 @@ from itertools import groupby
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed, JsonResponse
 from django.contrib import messages
 from .models import Tournament, Player, Match, Score
 from .forms import (
@@ -100,7 +100,7 @@ def index(request):
         winner = None
         max_score = 0
         for player, score in player_scores:
-            if score >= 30 and (winner is None or score > max_score):
+            if score >= tournament.points_to_win and (winner is None or score > max_score):
                 winner = player
                 max_score = score
         if winner:
@@ -177,7 +177,7 @@ def tournaments(request):
     :param request: The HTTP request object.
     :return: An HTTP response object rendering the tournaments.html template.
     """
-    all_tournaments = Tournament.objects.all().order_by("-date")
+    all_tournaments = Tournament.objects.prefetch_related("players", "matches__scores__player").order_by("-date")
     form = TournamentForm()
     return render(
         request, "tournaments.html", {"tournaments": all_tournaments, "form": form}
@@ -207,8 +207,14 @@ def tournament_registration(request, pk):
 
         if action == "add":
             player.tournaments.add(tournament)
+            tournament.points_to_win = tournament.players.count() * 10
+            tournament.save()
         elif action == "remove":
             player.tournaments.remove(tournament)
+            tournament.points_to_win = tournament.players.count() * 10
+            if tournament.points_to_win == 0:
+                tournament.points_to_win = 40
+            tournament.save()
 
         return redirect("tournament_registration", pk=pk)
 
@@ -272,24 +278,29 @@ def tournament_detail(request, pk):
 @user_passes_test(is_poweruser)
 def create_tournament(request):
     """
-    Creates a new tournament and redirects to the tournament registration page.
-
-    :param request: The HTTP request object.
-    :return: An HTTP response object rendering the create tournament page or
-             redirecting to the tournament registration page.
+    Creates a new tournament, adds selected players, and redirects to the tournament detail page.
     """
+    all_players = Player.objects.all().order_by("name")
 
     if request.method == "POST":
         form = TournamentForm(request.POST)
         if form.is_valid():
             tournament = form.save()
+            
+            player_ids = request.POST.getlist("players")
+            if player_ids:
+                players = Player.objects.filter(id__in=player_ids)
+                tournament.players.add(*players)
+                tournament.points_to_win = players.count() * 10
+                tournament.save()
+                
             logger.info(
-                f"User '{request.user.username}' created tournament '{tournament.name}'."
+                f"User '{request.user.username}' created tournament '{tournament.name}' with {len(player_ids)} players."
             )
-            return redirect("tournament_registration", pk=tournament.pk)
+            return redirect("tournament_detail", pk=tournament.pk)
     else:
         form = TournamentForm()
-    return render(request, "create_tournament.html", {"form": form})
+    return render(request, "create_tournament.html", {"form": form, "all_players": all_players})
 
 
 @login_required
@@ -409,3 +420,11 @@ def delete_match(request, pk):
         return redirect("tournament_detail", pk=tournament.pk)
 
     return HttpResponseNotAllowed(["POST"])
+
+
+def assetlinks(request):
+    """
+    Returns an empty JSON array to satisfy the Digital Asset Links protocol
+    and prevent 404 Not Found errors in the logs.
+    """
+    return JsonResponse([], safe=False)

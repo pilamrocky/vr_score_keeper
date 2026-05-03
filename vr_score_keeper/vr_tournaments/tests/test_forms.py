@@ -5,7 +5,7 @@ from ..models import Tournament
 
 class FormTests(TestCase):
     def test_tournament_form(self):
-        form_data = {"name": "Test Tournament", "date": "2024-01-01"}
+        form_data = {"name": "Test Tournament", "date": "2024-01-01", "points_to_win": 40}
         form = TournamentForm(data=form_data)
         self.assertTrue(form.is_valid())
 

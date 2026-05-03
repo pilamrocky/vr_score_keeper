@@ -13,6 +13,7 @@ class Tournament(models.Model):
     date = models.DateField(default=timezone.localdate)
     name = models.CharField(max_length=255, blank=True)
     winner = models.CharField(max_length=255, blank=True)
+    points_to_win = models.IntegerField(default=40)
 
     def save(self, *args, **kwargs):
         if not self.name:

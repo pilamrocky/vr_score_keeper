@@ -2,7 +2,7 @@
 
 {% block content %}
     <h1 class="is-size-3 mb-4">New Tournament</h1>
-    <form method="post" action="{% url 'create_tournament' %}" class="box">
+    <form method="post" action="{% url 'create_tournament' %}">
         {% csrf_token %}
         {% if form.errors %}
             <div class="notification is-danger">
@@ -13,14 +13,68 @@
                 </ul>
             </div>
         {% endif %}
-        <div class="field">
-            <label class="label">Tournament Name</label>
-            <div class="control">{{ form.name }}</div>
+        
+        <div class="box mb-4">
+            <h2 class="title is-5 mb-4">Tournament Details</h2>
+            <div class="field">
+                <label class="label">Tournament Name</label>
+                <div class="control">{{ form.name }}</div>
+            </div>
+            <div class="field">
+                <label class="label">Date</label>
+                <div class="control">{{ form.date }}</div>
+            </div>
+            <div class="field">
+                <label class="label">Points to Win (Auto-calculates)</label>
+                <div class="control">{{ form.points_to_win }}</div>
+            </div>
         </div>
-        <div class="field">
-            <label class="label">Date</label>
-            <div class="control">{{ form.date }}</div>
+
+        <div class="box mb-4">
+            <h2 class="title is-5 mb-4">Select Players</h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                {% for player in all_players %}
+                    <label class="button is-fullwidth mb-3 is-light player-btn-label" style="height: auto; white-space: normal; padding: 15px;">
+                        <input type="checkbox" name="players" value="{{ player.id }}" class="player-checkbox is-hidden">
+                        <span class="is-size-5">{{ player.name }}</span>
+                    </label>
+                {% empty %}
+                    <p>No players available. Please add players first.</p>
+                {% endfor %}
+            </div>
         </div>
-        <button class="button is-primary" type="submit">Create Tournament</button>
+
+        <button class="button is-primary is-fullwidth is-medium mt-4" type="submit">Create Tournament</button>
     </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('.player-checkbox');
+            const pointsInput = document.querySelector('input[name="points_to_win"]');
+            
+            function updatePoints() {
+                let count = 0;
+                checkboxes.forEach(cb => {
+                    const label = cb.closest('.player-btn-label');
+                    if (cb.checked) {
+                        count++;
+                        label.classList.remove('is-light');
+                        label.classList.add('is-info');
+                    } else {
+                        label.classList.remove('is-info');
+                        label.classList.add('is-light');
+                    }
+                });
+                if (count > 0) {
+                    pointsInput.value = count * 10;
+                } else {
+                    pointsInput.value = 40;
+                }
+            }
+            
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updatePoints);
+            });
+        });
+    </script>
 {% endblock content %}

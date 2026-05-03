@@ -20,11 +20,13 @@ class TournamentForm(forms.ModelForm):
         fields = (
             "name",
             "date",
+            "points_to_win",
         )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["name"].initial = f"Tournament {Tournament.objects.count() + 1}"
+        self.fields["points_to_win"].initial = 40
 
 
 class PlayerForm(forms.ModelForm):
@@ -49,24 +51,32 @@ class MatchForm(forms.ModelForm):
 
 
 class MultiScoreForm(forms.Form):
-    # scores = forms.CharField(widget=forms.HiddenInput())
-
     def __init__(self, registered_players, match, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.registered_players = registered_players
         self.match = match
         for player in registered_players:
-            self.fields[f"score_{player.pk}"] = forms.IntegerField(label=player.name)
+            self.fields[f"rank_{player.pk}"] = forms.IntegerField(label=player.name, initial=1)
 
     def save(self):
-        scores_data = self.cleaned_data
+        ranks_data = self.cleaned_data
+        
+        player_ranks = []
+        for player in self.registered_players:
+            rank = ranks_data.get(f"rank_{player.pk}", 1)
+            player_ranks.append((player.pk, rank))
+            
+        N = len(self.registered_players)
         scores = []
-        for player_pk, score in [
-            (pk, scores_data[f"score_{pk}"])
-            for pk in [player.pk for player in self.registered_players]
-        ]:
-            score, created = Score.objects.get_or_create(
-                match=self.match, player_id=player_pk, defaults={"score": score}
+        
+        for player_pk, rank in player_ranks:
+            # Count how many players had a strictly better (lower) rank
+            beat_me = sum(1 for p_pk, r in player_ranks if r < rank)
+            points = max(0, N - beat_me)
+            
+            score, created = Score.objects.update_or_create(
+                match=self.match, player_id=player_pk, defaults={"score": points}
             )
             scores.append(score)
+            
         return scores

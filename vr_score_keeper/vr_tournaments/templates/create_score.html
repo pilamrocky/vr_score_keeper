@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="is-size-3 mb-4">Match Scores</h1>
-    <form method="post" action="{% url 'create_score' match.pk %}" class="box">
+    <h1 class="is-size-3 mb-4">Assign Ranks</h1>
+    <p class="subtitle is-6 mb-5">Set the rank for each player. Ties are allowed. Points will be automatically calculated!</p>
+
+    <form method="post" action="{% url 'create_score' match.pk %}">
         {% csrf_token %}
         {% if form.errors %}
             <div class="notification is-danger">
@@ -13,19 +15,82 @@
                 </ul>
             </div>
         {% endif %}
-        {% for field in form %}
-            <div class="field is-grouped">
-                <label class="label is-large pr-4">{{ field.label }}</label>
-                <div class="control">
-                    <div class="select">
-                        <select name="{{ field.name }}" id="{{ field.auto_id }}" required>
-                            <option value="0">0</option>
-                            {% for i in form %}<option value="{{ forloop.counter }}">{{ forloop.counter }}</option>{% endfor %}
-                        </select>
+        
+        <div class="box">
+            {% for field in form %}
+                <div class="is-flex is-align-items-center is-justify-content-space-between mb-4 pb-4 rank-row" style="border-bottom: 1px solid #333;">
+                    <!-- Hidden input to store the actual rank value being submitted -->
+                    <input type="hidden" name="{{ field.name }}" id="{{ field.auto_id }}" value="1" class="rank-input">
+                    
+                    <!-- Player Name -->
+                    <p class="title is-5 m-0" style="flex-shrink: 1; word-break: break-word;">{{ field.label }}</p>
+                    
+                    <!-- Rank Stepper UI -->
+                    <div class="is-flex is-align-items-center ml-3" style="flex-shrink: 0;">
+                        <button type="button" class="button is-danger is-outlined rank-minus" style="border-radius: 50%; width: 45px; height: 45px;">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        
+                        <p class="title is-3 m-0 px-3 rank-display" style="min-width: 75px; text-align: center;">1st</p>
+                        
+                        <button type="button" class="button is-success is-outlined rank-plus" style="border-radius: 50%; width: 45px; height: 45px;">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
-        <button class="button is-primary" type="submit">Create Scores</button>
+            {% endfor %}
+        </div>
+        
+        <button class="button is-primary is-fullwidth is-medium mt-4" type="submit">Save Match Scores</button>
     </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const getOrdinal = (n) => {
+                const j = n % 10,
+                      k = n % 100;
+                if (j == 1 && k != 11) { return n + "st"; }
+                if (j == 2 && k != 12) { return n + "nd"; }
+                if (j == 3 && k != 13) { return n + "rd"; }
+                return n + "th";
+            };
+
+            document.querySelectorAll('.rank-input').forEach(input => {
+                const levelNode = input.closest('.rank-row');
+                const minusBtn = levelNode.querySelector('.rank-minus');
+                const plusBtn = levelNode.querySelector('.rank-plus');
+                const display = levelNode.querySelector('.rank-display');
+
+                let currentRank = parseInt(input.value) || 1;
+
+                const updateUI = () => {
+                    input.value = currentRank;
+                    display.textContent = getOrdinal(currentRank);
+                    // Prevent rank from going "better" than 1st
+                    if (currentRank <= 1) {
+                        plusBtn.setAttribute('disabled', 'disabled');
+                    } else {
+                        plusBtn.removeAttribute('disabled');
+                    }
+                };
+
+                minusBtn.addEventListener('click', () => {
+                    // Worsen rank (move down the leaderboard)
+                    currentRank++;
+                    updateUI();
+                });
+
+                plusBtn.addEventListener('click', () => {
+                    // Improve rank (move up the leaderboard)
+                    if (currentRank > 1) {
+                        currentRank--;
+                        updateUI();
+                    }
+                });
+
+                // Initialize
+                updateUI();
+            });
+        });
+    </script>
 {% endblock content %}

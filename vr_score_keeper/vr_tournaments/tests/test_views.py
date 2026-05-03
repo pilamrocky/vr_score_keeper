@@ -51,7 +51,7 @@ class ViewTests(TestCase):
         self.client.login(username="superuser", password="password")
         response = self.client.post(
             reverse("create_tournament"),
-            {"name": "New Tournament", "date": "2024-01-01"},
+            {"name": "New Tournament", "date": "2024-01-01", "points_to_win": 40},
         )
         self.assertEqual(response.status_code, 302)  # Redirects after creation
         self.assertTrue(Tournament.objects.filter(name="New Tournament").exists())
