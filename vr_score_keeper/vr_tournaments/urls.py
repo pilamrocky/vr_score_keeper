@@ -19,4 +19,5 @@ urlpatterns = [
     path("delete_match/<pk>/", views.delete_match, name="delete_match"),
     path("profile/", views.profile, name="profile"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),
+    path(".well-known/assetlinks.json", views.assetlinks, name="assetlinks"),
 ]
