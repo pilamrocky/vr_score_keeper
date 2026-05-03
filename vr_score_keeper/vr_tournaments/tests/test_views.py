@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from ..models import Tournament, Player
+from ..models import Tournament, Player, Match, Score
 
 
 class ViewTests(TestCase):
@@ -55,3 +55,18 @@ class ViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)  # Redirects after creation
         self.assertTrue(Tournament.objects.filter(name="New Tournament").exists())
+
+    def test_tournament_detail_renders_zero_scores(self):
+        self.client.login(username="superuser", password="password")
+        player_with_score = Player.objects.create(name="Player With Score")
+        player_with_zero = Player.objects.create(name="Player With Zero")
+        self.tournament.players.add(player_with_score, player_with_zero)
+        match = Match.objects.create(tournament=self.tournament)
+        Score.objects.create(player=player_with_score, match=match, score=2)
+        Score.objects.create(player=player_with_zero, match=match, score=0)
+
+        response = self.client.get(
+            reverse("tournament_detail", args=[self.tournament.pk])
+        )
+
+        self.assertContains(response, '<td class="has-text-centered">0</td>')
