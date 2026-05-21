@@ -8,74 +8,106 @@
     <h2 class="is-size-3 mb-4">Current Tournaments</h2>
     {% for item in active_tournaments %}
       {% with tournament=item.tournament player_scores=item.player_scores %}
-        <div class="card">
-          <div class="card-content pt-0 pb-3 px-4">
+        <div class="card mb-5">
+          <div class="card-content pt-0 pb-4 px-4">
             <div class="content">
-              <div class="level is-mobile mb-2 pt-4">
+              <div class="level is-mobile mb-4 pt-4">
                 <div class="level-left">
                   <div class="level-item">
-                    <p class="title is-5">{{ tournament.name }}</p>
+                    <p class="title is-4 m-0" style="background: linear-gradient(90deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ tournament.name }}</p>
                   </div>
                 </div>
                 <div class="level-right">
                   <div class="level-item">
-                    <p class="title is-6">{{ tournament.date }}</p>
+                    <p class="subtitle is-6 m-0 has-text-grey-light">{{ tournament.date|date:"m/d/Y" }}</p>
                   </div>
                 </div>
               </div>
-              {% if tournament.winner %}<p class="subtitle is-6 py-1 mb-2">Winner: {{ tournament.winner }}</p>{% endif %}
-              <table class="table is-fullwidth">
-                <thead>
-                  {% for player, score in player_scores %}<th class="is-size-6 has-text-centered">{{ player.name }}</th>{% endfor %}
-                </thead>
-                <tbody>
-                  <tr>
-                    {% for player, score in player_scores %}<td class="is-size-5 has-text-centered">{{ score }}</td>{% endfor %}
-                  </tr>
-                </tbody>
-              </table>
+              
+              {% if tournament.winner %}
+                <div class="mb-4 is-flex is-align-items-center">
+                  <span class="icon has-text-warning mr-2"><i class="fas fa-crown"></i></span>
+                  <span class="has-text-weight-bold is-size-5 has-text-warning">Winner: {{ tournament.winner }}</span>
+                </div>
+              {% endif %}
+              
+              <div class="players-progress mt-4 mb-2">
+                {% for player, score in player_scores %}
+                  <div class="mb-4">
+                    <div class="is-flex is-justify-content-between is-align-items-center mb-1">
+                      <span class="has-text-weight-bold is-size-5">{{ player.name }}</span>
+                      <span class="has-text-weight-bold is-size-5 {% if score >= tournament.points_to_win %}has-text-success{% else %}has-text-info{% endif %}">
+                        {{ score }} <span class="is-size-7 has-text-grey-light">/ {{ tournament.points_to_win }} pts</span>
+                      </span>
+                    </div>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar-fill {% if score >= tournament.points_to_win %}winner{% endif %}" 
+                           style="width: {{ score|percentage:tournament.points_to_win }}%;"></div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
             </div>
           </div>
           {% if user|has_group:"powerUser" %}
             <footer class="card-footer">
               <a href="{% url 'tournament_detail' tournament.pk %}"
-                 class="card-footer-item">Details</a>
+                 class="card-footer-item">
+                 <span class="icon mr-2"><i class="fas fa-list-ul"></i></span>
+                 Details
+              </a>
               <a href="{% url 'create_match' tournament.pk %}"
-                 class="card-footer-item">Add Match</a>
+                 class="card-footer-item">
+                 <span class="icon mr-2"><i class="fas fa-plus"></i></span>
+                 Add Match
+              </a>
             </footer>
           {% endif %}
         </div>
       {% endwith %}
     {% endfor %}
   {% endif %}
+
   <h2 class="is-size-3 mb-4 mt-6">Previous Tournaments</h2>
   {% for item in previous_tournaments %}
     {% with tournament=item.tournament player_scores=item.player_scores %}
-      <div class="box">
-        <div class="level is-mobile mb-2">
+      <div class="box mb-4 previous-tournament-box">
+        <div class="level is-mobile mb-3">
           <div class="level-left">
             <div class="level-item">
-              <p class="title is-6">{{ tournament.name }}</p>
+              <p class="title is-5 m-0">{{ tournament.name }}</p>
             </div>
           </div>
           <div class="level-right">
             <div class="level-item">
-              <p class="title is-6">{{ tournament.date }}</p>
+              <p class="subtitle is-6 m-0 has-text-grey-light">{{ tournament.date|date:"m/d/Y" }}</p>
             </div>
           </div>
         </div>
-        {% if tournament.winner %}<p class="subtitle is-6 py-1 mb-2">Winner: {{ tournament.winner }}</p>{% endif %}
-        <table class="table is-fullwidth">
-          <thead>
-            {% for player, score in player_scores %}<th class="is-size-6 has-text-centered">{{ player.name }}</th>{% endfor %}
-          </thead>
-          <tbody>
-            <tr>
-              {% for player, score in player_scores %}<td class="is-size-5 has-text-centered">{{ score }}</td>{% endfor %}
-            </tr>
-          </tbody>
-        </table>
+        
+        {% if tournament.winner %}
+          <div class="mb-3 is-flex is-align-items-center">
+            <span class="icon has-text-warning mr-2"><i class="fas fa-crown"></i></span>
+            <span class="has-text-weight-bold is-size-6 has-text-warning">Winner: {{ tournament.winner }}</span>
+          </div>
+        {% else %}
+          <div class="mb-3">
+            <span class="tag is-dark is-rounded">In Progress</span>
+          </div>
+        {% endif %}
+        
+        <div class="is-flex is-flex-wrap-wrap mt-3" style="gap: 10px;">
+          {% for player, score in player_scores %}
+            <div class="is-flex is-align-items-center px-3 py-2" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 12px; flex-grow: 1; justify-content: space-between; min-width: 120px;">
+              <span class="has-text-weight-medium is-size-6">{{ player.name }}</span>
+              <span class="has-text-weight-bold is-size-5 ml-2 {% if player.name == tournament.winner %}has-text-warning{% else %}has-text-grey-light{% endif %}">{{ score }}</span>
+            </div>
+          {% endfor %}
+        </div>
       </div>
     {% endwith %}
+  {% empty %}
+    <p class="has-text-centered has-text-grey-light my-6">No previous tournaments found.</p>
   {% endfor %}
 {% endblock content %}
+

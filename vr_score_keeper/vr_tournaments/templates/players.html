@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="is-size-3 mb-4">Players</h1>
-    <form method="post" class="box">
+    <h1 class="title is-3 mb-2 vr-title">Players</h1>
+    <p class="subtitle is-6 mb-5 text-muted">Manage the roster of players registered in the system.</p>
+
+    <form method="post" class="box mb-5">
         {% csrf_token %}
         {% if form.errors %}
             <div class="notification is-danger">
@@ -13,31 +15,38 @@
                 </ul>
             </div>
         {% endif %}
-        <div class="field">
+        <div class="field mb-4">
             <label class="label">Name</label>
             <div class="control">{{ form.name }}</div>
         </div>
-        <button class="button is-primary is-outlined is-dark" type="submit">Add Player</button>
+        <button class="button is-primary is-fullwidth" type="submit">
+            <i class="fa-solid fa-user-plus mr-2"></i> Add Player
+        </button>
     </form>
-    <table class="table is-fullwidth">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Options</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for player in players %}
-                <tr>
-                    <td>{{ player.name }}</td>
-                    <td>
-                        <form action="{% url 'delete_player' pk=player.id %}" method="post">
+
+    <div class="players-list-container">
+        <h2 class="title is-4 mb-3">Current Roster</h2>
+        {% if players %}
+            <div class="player-cards">
+                {% for player in players %}
+                    <div class="player-touch-row">
+                        <div class="player-details">
+                            <span class="has-text-weight-semibold is-size-5">{{ player.name }}</span>
+                        </div>
+                        <form action="{% url 'delete_player' pk=player.id %}" method="post" class="m-0">
                             {% csrf_token %}
-                            <button class="button is-danger is-outlined is-dark is-small" type="submit">Delete</button>
+                            <button class="button is-danger is-small px-3 py-2" type="submit" aria-label="Delete player">
+                                <i class="fa-solid fa-trash-can mr-2"></i> Delete
+                            </button>
                         </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="box has-text-centered p-5">
+                <p class="text-muted">No players registered yet. Add some players above!</p>
+            </div>
+        {% endif %}
+    </div>
 {% endblock content %}
+

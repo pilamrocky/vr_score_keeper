@@ -1,31 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="title is-3">Edit Profile</h1>
+    <h1 class="title is-3 mb-2 vr-title">Edit Profile</h1>
+    <p class="subtitle is-6 mb-5 text-muted">Update your account credentials and personal details.</p>
 
     {# Display non-field errors if any #}
-    {% if form.non_field_errors %}<div class="notification is-danger">{{ form.non_field_errors }}</div>{% endif %}
+    {% if form.non_field_errors %}
+        <div class="notification is-danger mb-4">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
 
-    <form method="post">
+    <form method="post" class="box mb-5">
         {% csrf_token %}
 
         {# Loop through fields and render with Bulma structure #}
         {% for field in form %}
-            <div class="field">
+            <div class="field mb-4">
                 <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                 <div class="control">{{ field }}</div>
-                {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+                {% if field.help_text %}<p class="help text-muted">{{ field.help_text }}</p>{% endif %}
                 {% if field.errors %}<p class="help is-danger">{{ field.errors|striptags }}</p>{% endif %}
             </div>
         {% endfor %}
 
-        <div class="field is-grouped">
-            <div class="control">
-                <button type="submit" class="button is-success">Save Changes</button>
+        <div class="field is-grouped mt-5 is-flex-direction-column-mobile">
+            <div class="control is-fullwidth-mobile mb-2-mobile mr-2-tablet">
+                <button type="submit" class="button is-primary is-fullwidth-mobile">
+                    <i class="fa-solid fa-check mr-2"></i> Save Changes
+                </button>
             </div>
-            <div class="control">
-                <a href="{% url 'profile' %}" class="button is-light">Cancel</a>
+            <div class="control is-fullwidth-mobile">
+                <a href="{% url 'profile' %}" class="button is-outlined is-fullwidth-mobile">
+                    Cancel
+                </a>
             </div>
         </div>
     </form>
 {% endblock content %}
+

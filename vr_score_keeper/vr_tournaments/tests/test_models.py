@@ -57,9 +57,9 @@ class ScoreModelTest(TestCase):
         self.assertEqual(str(score), "Player 1 - 10")
 
     def test_score_validation(self):
-        with self.assertRaises(ValidationError):
-            score = Score(player=self.player, match=self.match, score=3)
-            score.clean()
+        # A score larger than the player count is now allowed
+        score = Score(player=self.player, match=self.match, score=3)
+        score.clean()  # This should not raise an error
 
         with self.assertRaises(ValidationError):
             score = Score(player=self.player, match=self.match, score=-1)

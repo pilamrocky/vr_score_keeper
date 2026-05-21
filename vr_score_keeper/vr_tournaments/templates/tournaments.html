@@ -3,58 +3,103 @@
 {% block content %}
 
   <!--Header-->
-  <h1 class="is-size-3 mb-4">Tournaments</h1>
-
-  <!--Create Tournament Button-->
-  {% if user.is_superuser %}
-    <a href="{% url 'create_tournament' %}"
-       class="button is-primary is-outlined isdark mb-5">Create Tournament</a>
-  {% endif %}
+  <div class="page-header">
+    <h1 class="is-size-2 m-0" style="background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Tournaments</h1>
+    
+    {% if user.is_superuser %}
+      <a href="{% url 'create_tournament' %}"
+         class="button is-primary">
+         <span class="icon mr-2"><i class="fas fa-plus-circle"></i></span>
+         New Tournament
+      </a>
+    {% endif %}
+  </div>
 
   <!--Main Tournament Box-->
   {% for tournament in tournaments %}
-    <div class="box">
+    <div class="box mb-5">
 
       <!--Box Header Level-->
-      <div class="level is-mobile mb-2">
+      <div class="level is-mobile mb-3">
         <div class="level-left">
           <div class="level-item">
-            <p class="title is-6">{{ tournament.name }}</p>
+            <p class="title is-4 m-0">{{ tournament.name }}</p>
           </div>
         </div>
         <div class="level-right">
           <div class="level-item">
-            <p class="title is-6">{{ tournament.date }}</p>
+            <p class="subtitle is-6 m-0 has-text-grey-light">{{ tournament.date|date:"m/d/Y" }}</p>
           </div>
         </div>
       </div>
 
-      <!--Winner Subtitle-->
-      {% if tournament.winner %}
-        <p class="subtitle is-6 py-1 mb-2">Winner: {{ tournament.winner }}</p>
-      {% else %}
-        <p class="subtitle is-6 py-1 mb-2">In Progress</p>
-      {% endif %}
+      <!--Winner Subtitle / Status Badge-->
+      <div class="mb-4">
+        {% if tournament.winner %}
+          <div class="is-flex is-align-items-center">
+            <span class="icon has-text-warning mr-2"><i class="fas fa-crown"></i></span>
+            <span class="has-text-weight-bold is-size-5 has-text-warning">Winner: {{ tournament.winner }}</span>
+          </div>
+        {% else %}
+          <span class="tag is-info is-light is-rounded">
+            <span class="icon mr-1"><i class="fas fa-spinner fa-spin-pulse"></i></span>
+            In Progress
+          </span>
+        {% endif %}
+      </div>
 
-      <!--Score Table-->
-      <table class="table is-fullwidth has-text-centered">
-        <thead>
-          <th class="is-size-7 has-text-centered">Date</th>
-          {% for player in tournament.players.all %}<th class="is-size-7 has-text-centered">{{ player }}</th>{% endfor %}
-        </thead>
-        <tbody>
-          {% for match in tournament.matches.all %}
+      <!--Score Table Scroll Container-->
+      <div class="mobile-scroll-container">
+        <table class="table is-fullwidth is-striped is-hoverable has-text-centered">
+          <thead>
             <tr>
-              <td class="is-size-7">{{ match.date|date:"m-d-y" }}</td>
+              <th class="has-text-centered">Date</th>
               {% for player in tournament.players.all %}
-                {% for score in match.scores.all %}
-                  {% if score.player == player %}<td class="is-size-6 has-text-centered">{{ score.score }}</td>{% endif %}
-                {% endfor %}
+                <th class="has-text-centered">{{ player.name }}</th>
               {% endfor %}
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for match in tournament.matches.all %}
+              <tr>
+                <td class="has-text-weight-semibold" style="white-space: nowrap;">{{ match.date|date:"m/d/Y" }}</td>
+                {% for player in tournament.players.all %}
+                  <td class="has-text-centered">
+                    {% for score in match.scores.all %}
+                      {% if score.player == player %}
+                        <span class="has-text-weight-bold is-size-5 {% if tournament.winner == player.name %}has-text-warning{% endif %}">
+                          {{ score.score }}
+                        </span>
+                      {% endif %}
+                    {% endfor %}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="{{ tournament.players.count|add:1 }}" class="has-text-centered has-text-grey-light py-4">
+                  No matches added yet.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      {% if tournament.matches.exists %}
+        <p class="help has-text-grey-light is-size-7 mt-1 px-1">
+          <span class="icon mr-1"><i class="fas fa-arrows-left-right"></i></span>
+          Swipe table horizontally to see all player scores
+        </p>
+      {% endif %}
+    </div>
+  {% empty %}
+    <div class="box has-text-centered py-6">
+      <p class="has-text-grey-light is-size-5 mb-4">No tournaments found.</p>
+      {% if user.is_superuser %}
+        <a href="{% url 'create_tournament' %}" class="button is-primary">Create Your First Tournament</a>
+      {% endif %}
     </div>
   {% endfor %}
 {% endblock content %}
+

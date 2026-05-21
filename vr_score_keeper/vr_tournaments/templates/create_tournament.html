@@ -1,50 +1,72 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="is-size-3 mb-4">New Tournament</h1>
+    <div class="page-header">
+        <div class="page-title-group">
+            <h1 class="title is-2 m-0" style="background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">New Tournament</h1>
+            <p class="subtitle is-6 mt-1 has-text-grey-light">Configure tournament settings and select participating players</p>
+        </div>
+        
+        <a class="button is-outlined is-info" href="{% url 'tournaments' %}">
+            <span class="icon"><i class="fas fa-arrow-left"></i></span>
+            <span>Cancel</span>
+        </a>
+    </div>
+
     <form method="post" action="{% url 'create_tournament' %}">
         {% csrf_token %}
         {% if form.errors %}
-            <div class="notification is-danger">
+            <div class="notification is-danger mb-4">
+                <p class="has-text-weight-bold mb-2">Please correct the errors below:</p>
                 <ul>
                     {% for field, errors in form.errors.items %}
-                        {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+                        {% for error in errors %}<li>{{ field.label }}: {{ error }}</li>{% endfor %}
                     {% endfor %}
                 </ul>
             </div>
         {% endif %}
         
-        <div class="box mb-4">
-            <h2 class="title is-5 mb-4">Tournament Details</h2>
-            <div class="field">
+        <div class="box mb-5">
+            <h2 class="title is-4 mb-4" style="border-left: 4px solid var(--accent-cyan); padding-left: 10px;">Tournament Details</h2>
+            
+            <div class="field mb-4">
                 <label class="label">Tournament Name</label>
                 <div class="control">{{ form.name }}</div>
             </div>
-            <div class="field">
+            
+            <div class="field mb-4">
                 <label class="label">Date</label>
                 <div class="control">{{ form.date }}</div>
             </div>
-            <div class="field">
+            
+            <div class="field mb-2">
                 <label class="label">Points to Win (Auto-calculates)</label>
                 <div class="control">{{ form.points_to_win }}</div>
+                <p class="help has-text-grey-light mt-1">This value is dynamically calculated based on selected players (10 pts per opponent).</p>
             </div>
         </div>
 
-        <div class="box mb-4">
-            <h2 class="title is-5 mb-4">Select Players</h2>
-            <div style="max-height: 300px; overflow-y: auto;">
+        <div class="box mb-5">
+            <h2 class="title is-4 mb-3" style="border-left: 4px solid var(--accent-blue); padding-left: 10px;">Select Players</h2>
+            <p class="subtitle is-6 has-text-grey-light mb-4">Tap on players to include them in the tournament:</p>
+            
+            <div class="players-selection-grid" style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
                 {% for player in all_players %}
-                    <label class="button is-fullwidth mb-3 is-light player-btn-label" style="height: auto; white-space: normal; padding: 15px;">
+                    <label class="player-btn-label mb-3">
+                        <span class="is-size-5 has-text-weight-semibold">{{ player.name }}</span>
                         <input type="checkbox" name="players" value="{{ player.id }}" class="player-checkbox is-hidden">
-                        <span class="is-size-5">{{ player.name }}</span>
+                        <span class="icon check-icon has-text-grey-light"><i class="far fa-circle"></i></span>
                     </label>
                 {% empty %}
-                    <p>No players available. Please add players first.</p>
+                    <p class="has-text-grey-light has-text-centered py-4">No players available. Please add players first.</p>
                 {% endfor %}
             </div>
         </div>
 
-        <button class="button is-primary is-fullwidth is-medium mt-4" type="submit">Create Tournament</button>
+        <button class="button is-primary is-fullwidth is-medium mt-5" type="submit">
+            <span class="icon mr-2"><i class="fas fa-trophy"></i></span>
+            Create Tournament
+        </button>
     </form>
 
     <script>
@@ -56,24 +78,30 @@
                 let count = 0;
                 checkboxes.forEach(cb => {
                     const label = cb.closest('.player-btn-label');
+                    const icon = label.querySelector('.check-icon i');
                     if (cb.checked) {
                         count++;
-                        label.classList.remove('is-light');
                         label.classList.add('is-info');
+                        icon.className = "fas fa-check-circle has-text-info";
                     } else {
                         label.classList.remove('is-info');
-                        label.classList.add('is-light');
+                        icon.className = "far fa-circle has-text-grey-light";
                     }
                 });
-                if (count > 0) {
-                    pointsInput.value = count * 10;
-                } else {
-                    pointsInput.value = 40;
+                if (pointsInput) {
+                    pointsInput.value = Math.max(0, (count - 1) * 10);
                 }
             }
             
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', updatePoints);
+                // Set initial active states if checkboxes are pre-checked (e.g. on validation failure reload)
+                if (cb.checked) {
+                    const label = cb.closest('.player-btn-label');
+                    label.classList.add('is-info');
+                    const icon = label.querySelector('.check-icon i');
+                    icon.className = "fas fa-check-circle has-text-info";
+                }
             });
         });
     </script>

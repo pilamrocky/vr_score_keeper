@@ -50,3 +50,4 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Image successfully built and pushed with tags: ${VERSION} and latest."
+R0cky82!

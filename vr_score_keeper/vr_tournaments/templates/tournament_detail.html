@@ -1,86 +1,155 @@
 {% extends "base.html" %}
+{% load user_tags %}
 
 {% block content %}
-    <div class="title">{{ tournament.name }}</div>
-    <div class="subtitle">{{ tournament.date }}</div>
+    <div class="page-header">
+        <div class="page-title-group">
+            <h1 class="title is-2 m-0" style="background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ tournament.name }}</h1>
+            <p class="subtitle is-6 mt-1 has-text-grey-light">Date: {{ tournament.date|date:"F d, Y" }}</p>
+        </div>
+        
+        <div class="buttons">
+            <a class="button is-outlined is-info" href="{% url 'index' %}">
+                <span class="icon"><i class="fas fa-arrow-left"></i></span>
+                <span>Dashboard</span>
+            </a>
+            {% if user.is_superuser %}
+                <a href="{% url 'tournament_registration' tournament.pk %}" class="button is-primary">
+                    <span class="icon"><i class="fas fa-users-cog"></i></span>
+                    <span>Manage Players</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <h2 class="title is-4 mb-4">Matches</h2>
     {% for date, matches_on_date in grouped_matches %}
-        <p>
-            <span class="is-size-6 has-text-weight-semibold">Date:</span>
-            <span class="is-size-7">{{ date|date:"m/d/Y" }}</span>
-        </p>
-        <table class="table is-fullwidth is-narrow is-striped">
-            <thead>
-                <th class="is-size-7 has-text-centered">Match</th>
-                {% for player in registered_players %}<th class="is-size-7 has-text-centered">{{ player }}</th>{% endfor %}
-                <th class="is-size-7 has-text-centered">Delete</th>
-            </thead>
-            <tbody>
-                {% for match in matches_on_date %}
-                    <tr>
-                        <th class="has-text-centered has-text-link">{{ forloop.revcounter }}</th>
-                        {% for score in match.ordered_scores %}<td class="has-text-centered">{{ score|default_if_none:"" }}</td>{% endfor %}
-                        <td class="has-text-centered">
-                            <form id="form-{{ match.pk }}"
-                                  action="{% url 'delete_match' match.pk %}"
-                                  method="post">
-                                {% csrf_token %}
-                                <button class="button is-danger is-dark is-outlined is-small has-text-centered js-modal-trigger"
-                                        type="button"
-                                        data-target="delete-modal"
-                                        data-form-id="form-{{ match.pk }}"
-                                        data-modal-title="Delete Match"
-                                        data-modal-body="Are you sure you want to delete this match?">
-                                    <span class="icon">
-                                        <i class="fas fa-trash"></i>
-                                    </span>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="box mb-5 p-4">
+            <div class="is-flex is-align-items-center mb-3">
+                <span class="icon has-text-cyan mr-2"><i class="far fa-calendar-alt"></i></span>
+                <span class="has-text-weight-bold is-size-5">Date: {{ date|date:"m/d/Y" }}</span>
+            </div>
+            
+            <div class="mobile-scroll-container">
+                <table class="table is-fullwidth is-striped is-hoverable has-text-centered">
+                    <thead>
+                        <tr>
+                            <th class="has-text-centered" style="width: 80px;">Match</th>
+                            {% for player in registered_players %}
+                                <th class="has-text-centered">{{ player.name }}</th>
+                            {% endfor %}
+                            {% if user.is_superuser %}
+                                <th class="has-text-centered" style="width: 80px;">Delete</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in matches_on_date %}
+                            <tr>
+                                <th class="has-text-centered has-text-cyan">Match #{{ forloop.revcounter }}</th>
+                                {% for score in match.ordered_scores %}
+                                    <td class="has-text-centered">{{ score|default_if_none:"-" }}</td>
+                                {% endfor %}
+                                {% if user.is_superuser %}
+                                    <td class="has-text-centered">
+                                        <form id="form-{{ match.pk }}"
+                                              action="{% url 'delete_match' match.pk %}"
+                                              method="post">
+                                            {% csrf_token %}
+                                            <button class="button is-danger is-outlined is-small js-modal-trigger"
+                                                    style="width: 32px; height: 32px; padding: 0 !important; min-height: unset; border-radius: 8px !important;"
+                                                    type="button"
+                                                    data-target="delete-modal"
+                                                    data-form-id="form-{{ match.pk }}"
+                                                    data-modal-title="Delete Match"
+                                                    data-modal-body="Are you sure you want to delete this match? This cannot be undone.">
+                                                <span class="icon">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </span>
+                                            </button>
+                                        </form>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="help has-text-grey-light is-size-7 mt-1 px-1">
+                <span class="icon mr-1"><i class="fas fa-arrows-left-right"></i></span>
+                Swipe match score table horizontally to see all scores
+            </p>
+        </div>
+    {% empty %}
+        <div class="box has-text-centered py-5 mb-5">
+            <p class="has-text-grey-light my-2">No matches played in this tournament yet.</p>
+            {% if user.is_superuser or user|has_group:"powerUser" %}
+                <a href="{% url 'create_match' tournament.pk %}" class="button is-primary is-outlined mt-3">Add First Match</a>
+            {% endif %}
+        </div>
     {% endfor %}
 
-    <table class="table is-fullwidth">
-        <thead>
-            <th>Players</th>
-        </thead>
-        <tbody>
+    <!-- Registered Players Card -->
+    <div class="box mb-5">
+        <h3 class="title is-4 mb-4">Registered Players</h3>
+        
+        <div class="is-flex is-flex-wrap-wrap" style="gap: 12px;">
             {% for player in registered_players %}
-                <tr>
-                    <td>{{ player.name }}</td>
-                </tr>
+                <div class="is-flex is-align-items-center px-4 py-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 12px; min-width: 150px; flex-grow: 1;">
+                    <span class="icon has-text-info mr-3"><i class="fas fa-user-tag"></i></span>
+                    <span class="has-text-weight-semibold is-size-5">{{ player.name }}</span>
+                </div>
+            {% empty %}
+                <p class="has-text-grey-light w-100 my-2">No players registered. Please register players first.</p>
             {% endfor %}
-        </tbody>
-    </table>
+        </div>
+        
+        {% if user.is_superuser %}
+            <div class="mt-4">
+                <a href="{% url 'tournament_registration' tournament.pk %}" class="button is-primary is-outlined is-fullwidth">
+                    <span class="icon mr-2"><i class="fas fa-user-plus"></i></span>
+                    Manage Registered Players
+                </a>
+            </div>
+        {% endif %}
+    </div>
 
-    <form id="delete-tournament-form"
-          action="{% url 'delete_tournament' tournament.pk %}"
-          method="post">
-        {% csrf_token %}
-        <button class="button is-danger is-outlined js-modal-trigger"
-                type="button"
-                data-target="delete-modal"
-                data-form-id="delete-tournament-form"
-                data-modal-title="Delete Tournament"
-                data-modal-body="Are you sure you want to delete this tournament? This action cannot be undone.">
-            DELETE
-        </button>
-    </form>
+    <!-- Danger Zone (Delete Tournament) -->
+    {% if user.is_superuser %}
+        <div class="box mb-5" style="border-color: rgba(241, 70, 104, 0.2) !important;">
+            <h3 class="title is-4 has-text-danger mb-4">Danger Zone</h3>
+            <p class="subtitle is-6 has-text-grey-light mb-4">Deleting this tournament will permanently erase all matches and score data recorded under it.</p>
+            
+            <form id="delete-tournament-form"
+                  action="{% url 'delete_tournament' tournament.pk %}"
+                  method="post">
+                {% csrf_token %}
+                <button class="button is-danger is-outlined is-fullwidth js-modal-trigger"
+                        type="button"
+                        data-target="delete-modal"
+                        data-form-id="delete-tournament-form"
+                        data-modal-title="Delete Tournament"
+                        data-modal-body="Are you sure you want to delete this tournament? This action is absolute and cannot be undone.">
+                    <span class="icon mr-2"><i class="fas fa-exclamation-triangle"></i></span>
+                    Delete Tournament
+                </button>
+            </form>
+        </div>
+    {% endif %}
 
+    <!-- Delete Modal -->
     <div id="delete-modal" class="modal">
         <div class="modal-background"></div>
-        <div class="modal-card">
+        <div class="modal-card px-3">
             <header class="modal-card-head">
                 <p class="modal-card-title"></p>
             </header>
             <section class="modal-card-body">
             </section>
-            <footer class="modal-card-foot">
+            <footer class="modal-card-foot is-justify-content-end">
                 <div class="buttons">
-                    <button id="delete-confirm-button" class="button is-danger">Delete</button>
                     <button class="button cancel-button">Cancel</button>
+                    <button id="delete-confirm-button" class="button is-danger">Delete</button>
                 </div>
             </footer>
         </div>
@@ -95,6 +164,7 @@
                 $el.classList.add('is-active');
             }
 
+            // Function to close modal
             function closeModal($el) {
                 $el.classList.remove('is-active');
             }

@@ -207,13 +207,13 @@ def tournament_registration(request, pk):
 
         if action == "add":
             player.tournaments.add(tournament)
-            tournament.points_to_win = tournament.players.count() * 10
+            count = tournament.players.count()
+            tournament.points_to_win = max(0, (count - 1) * 10)
             tournament.save()
         elif action == "remove":
             player.tournaments.remove(tournament)
-            tournament.points_to_win = tournament.players.count() * 10
-            if tournament.points_to_win == 0:
-                tournament.points_to_win = 40
+            count = tournament.players.count()
+            tournament.points_to_win = max(0, (count - 1) * 10)
             tournament.save()
 
         return redirect("tournament_registration", pk=pk)
@@ -291,7 +291,8 @@ def create_tournament(request):
             if player_ids:
                 players = Player.objects.filter(id__in=player_ids)
                 tournament.players.add(*players)
-                tournament.points_to_win = players.count() * 10
+                count = players.count()
+                tournament.points_to_win = max(0, (count - 1) * 10)
                 tournament.save()
                 
             logger.info(

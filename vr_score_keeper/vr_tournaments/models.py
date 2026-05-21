@@ -13,7 +13,7 @@ class Tournament(models.Model):
     date = models.DateField(default=timezone.localdate)
     name = models.CharField(max_length=255, blank=True)
     winner = models.CharField(max_length=255, blank=True)
-    points_to_win = models.IntegerField(default=40)
+    points_to_win = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
         if not self.name:
@@ -79,6 +79,5 @@ class Score(models.Model):
         return f"{self.player.name} - {self.score}"
 
     def clean(self):
-        max_score = self.match.tournament.players.count()
-        if self.score < 0 or self.score > max_score:
-            raise ValidationError(f"Score must be between 0 and {max_score}")
+        if self.score < 0:
+            raise ValidationError("Score cannot be negative.")

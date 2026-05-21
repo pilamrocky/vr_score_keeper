@@ -1,33 +1,61 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="title is-3">My Profile</h1>
+    <h1 class="title is-3 mb-2 vr-title">My Profile</h1>
+    <p class="subtitle is-6 mb-5 text-muted">Manage your personal details and account security settings.</p>
 
     {# Display messages (like success/error after edit) #}
     {% if messages %}
         {% for message in messages %}
-            <div class="notification {% if message.tags %}is-{{ message.tags }}{% else %}is-info{% endif %}">{{ message }}</div>
+            <div class="notification {% if message.tags %}is-{{ message.tags }}{% else %}is-info{% endif %} mb-4">
+                {{ message }}
+            </div>
         {% endfor %}
     {% endif %}
 
-    <div class="content">
-        <p>
-            <strong>Username:</strong> {{ user.username }}
-        </p>
-        <p>
-            <strong>First Name:</strong> {{ user.first_name|default:"Not set" }}
-        </p>
-        <p>
-            <strong>Last Name:</strong> {{ user.last_name|default:"Not set" }}
-        </p>
-        <p>
-            <strong>Email:</strong> {{ user.email|default:"Not set" }}
-        </p>
+    <div class="box mb-5">
+        <!-- Avatar/Header Section -->
+        <div class="is-flex is-align-items-center mb-5 pb-4" style="border-bottom: 1px solid var(--border-glass);">
+            <div class="avatar-wrapper mr-4" style="background: rgba(0, 209, 178, 0.1); border: 2px solid var(--accent-cyan); border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow-cyan);">
+                <i class="fa-solid fa-user fa-2x" style="color: var(--accent-cyan);"></i>
+            </div>
+            <div>
+                <span class="is-size-7 has-text-weight-bold" style="color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">Active Player</span>
+                <h2 class="title is-4 m-0" style="color: var(--text-main);">{{ user.username }}</h2>
+            </div>
+        </div>
+
+        <!-- Profile Details Grid -->
+        <div class="columns is-multiline">
+            <div class="column is-6 py-2">
+                <span class="label" style="margin-bottom: 0.25rem !important;">First Name</span>
+                <div class="is-size-5 has-text-weight-semibold" style="color: var(--text-main);">
+                    {{ user.first_name|default:"Not set" }}
+                </div>
+            </div>
+            <div class="column is-6 py-2">
+                <span class="label" style="margin-bottom: 0.25rem !important;">Last Name</span>
+                <div class="is-size-5 has-text-weight-semibold" style="color: var(--text-main);">
+                    {{ user.last_name|default:"Not set" }}
+                </div>
+            </div>
+            <div class="column is-12 py-2">
+                <span class="label" style="margin-bottom: 0.25rem !important;">Email Address</span>
+                <div class="is-size-5 has-text-weight-semibold" style="color: var(--text-main); word-break: break-all;">
+                    {{ user.email|default:"Not set" }}
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="buttons">
-        <a href="{% url 'profile_edit' %}" class="button is-link">Edit Profile</a>
+    <div class="buttons is-flex-direction-column-mobile">
+        <a href="{% url 'profile_edit' %}" class="button is-info is-fullwidth-mobile mr-2-tablet mb-2-mobile">
+            <i class="fa-solid fa-user-pen mr-2"></i> Edit Profile
+        </a>
         {# Link to Django's built-in password change view #}
-        <a href="{% url 'password_change' %}" class="button is-warning">Change Password</a>
+        <a href="{% url 'password_change' %}" class="button is-outlined is-fullwidth-mobile">
+            <i class="fa-solid fa-lock mr-2"></i> Change Password
+        </a>
     </div>
 {% endblock content %}
+

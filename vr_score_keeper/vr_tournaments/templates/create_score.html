@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="is-size-3 mb-4">Assign Ranks</h1>
-    <p class="subtitle is-6 mb-5">Set the rank for each player. Ties are allowed. Points will be automatically calculated!</p>
+    <h1 class="title is-3 mb-2 vr-title">Assign Scores</h1>
+    <p class="subtitle is-6 mb-5 text-muted">Set the score for each player in this match. Scores start at 0.</p>
 
     <form method="post" action="{% url 'create_score' match.pk %}">
         {% csrf_token %}
@@ -16,25 +16,31 @@
             </div>
         {% endif %}
         
-        <div class="box">
+        <div class="score-cards-container mb-5">
             {% for field in form %}
-                <div class="is-flex is-align-items-center is-justify-content-space-between mb-4 pb-4 rank-row" style="border-bottom: 1px solid #333;">
-                    <!-- Hidden input to store the actual rank value being submitted -->
-                    <input type="hidden" name="{{ field.name }}" id="{{ field.auto_id }}" value="1" class="rank-input">
+                <div class="score-card mb-4 is-flex is-align-items-center is-justify-content-space-between">
+                    <!-- Hidden input to store the actual score value being submitted -->
+                    <input type="hidden" name="{{ field.name }}" id="{{ field.auto_id }}" value="{{ field.value|default:0 }}" class="score-input">
                     
-                    <!-- Player Name -->
-                    <p class="title is-3 m-0" style="flex-shrink: 1; word-break: break-word;">{{ field.label }}</p>
+                    <!-- Player Details -->
+                    <div class="player-info-wrapper" style="flex-shrink: 1; word-break: break-word; padding-left: 12px;">
+                        <span class="is-size-7 has-text-weight-bold" style="color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em;">Player</span>
+                        <h3 class="title is-4 m-0 mt-1" style="font-weight: 700;">{{ field.label }}</h3>
+                    </div>
                     
-                    <!-- Rank Stepper UI -->
-                    <div class="is-flex is-align-items-center ml-3" style="flex-shrink: 0;">
-                        <button type="button" class="button is-success is-outlined rank-up" aria-label="Move player up the leaderboard" style="border-radius: 50%; width: 45px; height: 45px;">
-                            <i class="fa-solid fa-arrow-up"></i>
+                    <!-- Score Stepper UI -->
+                    <div class="stepper-wrapper is-flex is-align-items-center ml-3" style="flex-shrink: 0;">
+                        <button type="button" class="button score-down" aria-label="Decrease score">
+                            <i class="fa-solid fa-chevron-down"></i>
                         </button>
                         
-                        <p class="title is-3 m-0 px-3 rank-display" style="min-width: 75px; text-align: center;">1st</p>
+                        <div class="score-display-wrapper">
+                            <span class="score-display">0</span>
+                            <span class="score-unit">Points</span>
+                        </div>
                         
-                        <button type="button" class="button is-danger is-outlined rank-down" aria-label="Move player down the leaderboard" style="border-radius: 50%; width: 45px; height: 45px;">
-                            <i class="fa-solid fa-arrow-down"></i>
+                        <button type="button" class="button score-up" aria-label="Increase score">
+                            <i class="fa-solid fa-chevron-up"></i>
                         </button>
                     </div>
                 </div>
@@ -46,59 +52,43 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const getOrdinal = (n) => {
-                const j = n % 10,
-                      k = n % 100;
-                if (j == 1 && k != 11) { return n + "st"; }
-                if (j == 2 && k != 12) { return n + "nd"; }
-                if (j == 3 && k != 13) { return n + "rd"; }
-                return n + "th";
-            };
+            document.querySelectorAll('.score-input').forEach(input => {
+                const levelNode = input.closest('.score-card');
+                const upBtn = levelNode.querySelector('.score-up');
+                const downBtn = levelNode.querySelector('.score-down');
+                const display = levelNode.querySelector('.score-display');
 
-            const maxRank = document.querySelectorAll('.rank-input').length;
-
-            document.querySelectorAll('.rank-input').forEach(input => {
-                const levelNode = input.closest('.rank-row');
-                const upBtn = levelNode.querySelector('.rank-up');
-                const downBtn = levelNode.querySelector('.rank-down');
-                const display = levelNode.querySelector('.rank-display');
-
-                let currentRank = parseInt(input.value) || 1;
+                let currentScore = parseInt(input.value) || 0;
 
                 const updateUI = () => {
-                    input.value = currentRank;
-                    display.textContent = currentRank === 0 ? 'NA' : getOrdinal(currentRank);
-                    // Prevent rank from going "better" than 1st
-                    if (currentRank === 1) {
-                        upBtn.setAttribute('disabled', 'disabled');
+                    input.value = currentScore;
+                    display.textContent = currentScore;
+                    
+                    // Prevent score from going negative by disabling down button
+                    if (currentScore <= 0) {
+                        downBtn.setAttribute('disabled', 'disabled');
                     } else {
-                        upBtn.removeAttribute('disabled');
+                        downBtn.removeAttribute('disabled');
                     }
-
-                    downBtn.removeAttribute('disabled');
                 };
 
                 downBtn.addEventListener('click', () => {
-                    // Worsen rank (move down the leaderboard)
-                    if (currentRank !== 0) {
-                        currentRank = currentRank >= maxRank ? 0 : currentRank + 1;
+                    if (currentScore > 0) {
+                        currentScore--;
                     }
                     updateUI();
                 });
 
                 upBtn.addEventListener('click', () => {
-                    // Improve rank (move up the leaderboard)
-                    if (currentRank === 0) {
-                        currentRank = maxRank;
-                    } else if (currentRank > 1) {
-                        currentRank--;
-                    }
+                    currentScore++;
                     updateUI();
                 });
 
                 // Initialize
                 updateUI();
+
             });
         });
     </script>
 {% endblock content %}
+

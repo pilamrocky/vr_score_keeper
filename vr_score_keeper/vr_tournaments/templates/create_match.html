@@ -1,20 +1,51 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="is-size-3 mb-4">Create Match</h1>
+    <div class="page-header">
+        <div class="page-title-group">
+            <h1 class="title is-2 m-0" style="background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Create Match</h1>
+            <p class="subtitle is-6 mt-1 has-text-grey-light">Add a new match for {{ tournament.name }}</p>
+        </div>
+        
+        <a class="button is-outlined is-info" href="{% url 'tournament_detail' tournament.pk %}">
+            <span class="icon"><i class="fas fa-arrow-left"></i></span>
+            <span>Cancel</span>
+        </a>
+    </div>
+
     <form method="post"
           action="{% url 'create_match' tournament.pk %}"
           class="box">
         {% csrf_token %}
+        
+        <h2 class="title is-4 mb-4" style="border-left: 4px solid var(--accent-cyan); padding-left: 10px;">Match Details</h2>
+        <p class="subtitle is-6 has-text-grey-light mb-4">Set the schedule date for the match under tournament <strong>{{ tournament.name }}</strong>:</p>
+
+        {% if form.errors %}
+            <div class="notification is-danger mb-4">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
         {% for field in form %}
             {% if field.name != 'tournament' %}
-                <div class="field">
+                <div class="field mb-5">
                     <label class="label">{{ field.label }}</label>
                     <div class="control">{{ field }}</div>
+                    {% if field.help_text %}<p class="help has-text-grey-light mt-1">{{ field.help_text }}</p>{% endif %}
                 </div>
             {% endif %}
         {% endfor %}
+        
         <input type="hidden" name="tournament" value="{{ tournament.pk }}" />
-        <button class="button is-primary" type="submit">Create Match</button>
+        
+        <button class="button is-primary is-fullwidth is-medium mt-5" type="submit">
+            <span class="icon mr-2"><i class="fas fa-calendar-plus"></i></span>
+            Create & Add Scores
+        </button>
     </form>
 {% endblock content %}

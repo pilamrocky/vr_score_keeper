@@ -68,6 +68,9 @@ USER appuser
 # Copy the source code into the container.
 COPY . .
 
+# Fix Windows line endings and ensure execution permissions
+RUN sed -i 's/\r$//g' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
 # Script to run necessary start up commands for DB migration and static file collection.
 ENTRYPOINT ["/app/entrypoint.sh"]
 

@@ -1,53 +1,65 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="is-size-3 mb-4">{{ tournament.name }}</h1>
-    <h2 class="subtitle is-5">Points to win: {{ tournament.points_to_win }}</h2>
-    <h2 class="is-size-4">Registered Players:</h2>
-    <table class="table is-fullwidth">
-        <thead>
-            <th>Player</th>
-            <th>Action</th>
-        </thead>
-        <tbody>
-            {% for player in registered_players %}
-                <tr>
-                    <td>{{ player.name }}</td>
-                    <td>
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="player_id" value="{{ player.id }}" />
-                            <input type="hidden" name="action" value="remove" />
-                            <button class="button is-danger is-outlined" type="submit">Remove</button>
-                        </form>
-                    </td>
-                {% endfor %}
-            </tr>
-        </tbody>
-    </table>
+    <div class="page-header">
+        <div class="page-title-group">
+            <h1 class="title is-2 m-0" style="background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ tournament.name }}</h1>
+            <p class="subtitle is-5 mt-1 has-text-cyan">Points to win: {{ tournament.points_to_win }} pts</p>
+        </div>
+        
+        <a class="button is-outlined is-info" href="{% url 'tournament_detail' tournament.pk %}">
+            <span class="icon"><i class="fas fa-chevron-left"></i></span>
+            <span>Back</span>
+        </a>
+    </div>
 
-    <h2 class="is-size-4">Available Players:</h2>
-    <table class="table is-fullwidth">
-        <thead>
-            <th>Player</th>
-            <th>Action</th>
-        </thead>
-        <tbody>
+    <!-- Registered Players Section -->
+    <div class="box mb-5">
+        <h2 class="title is-4 mb-4" style="border-left: 4px solid var(--accent-green); padding-left: 10px;">Registered Players</h2>
+        
+        <div class="registered-list">
+            {% for player in registered_players %}
+                <div class="player-touch-row">
+                    <span class="has-text-weight-bold is-size-5">{{ player.name }}</span>
+                    <form method="post" class="m-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="player_id" value="{{ player.id }}" />
+                        <input type="hidden" name="action" value="remove" />
+                        <button class="button is-danger is-outlined" type="submit" style="padding: 8px 16px !important; min-height: unset; height: 38px;">
+                            <span class="icon mr-1"><i class="fas fa-user-minus"></i></span>
+                            <span>Remove</span>
+                        </button>
+                    </form>
+                </div>
+            {% empty %}
+                <p class="has-text-grey-light has-text-centered my-5">No players registered yet. Add some below!</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Available Players Section -->
+    <div class="box mb-5">
+        <h2 class="title is-4 mb-4" style="border-left: 4px solid var(--accent-blue); padding-left: 10px;">Available Players</h2>
+        
+        <div class="available-list">
             {% for player in all_players %}
                 {% if player not in registered_players %}
-                    <tr>
-                        <td>{{ player.name }}</td>
-                        <td>
-                            <form method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="player_id" value="{{ player.id }}" />
-                                <input type="hidden" name="action" value="add" />
-                                <button class="button is-primary is-outlined" type="submit">Register</button>
-                            </form>
-                        {% endif %}
-                    </td>
-                {% endfor %}
-            </tr>
-        </tbody>
-    </table>
+                    <div class="player-touch-row">
+                        <span class="has-text-weight-bold is-size-5">{{ player.name }}</span>
+                        <form method="post" class="m-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="player_id" value="{{ player.id }}" />
+                            <input type="hidden" name="action" value="add" />
+                            <button class="button is-primary is-outlined" type="submit" style="padding: 8px 16px !important; min-height: unset; height: 38px;">
+                                <span class="icon mr-1"><i class="fas fa-user-plus"></i></span>
+                                <span>Register</span>
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <p class="has-text-grey-light has-text-centered my-5">No other players are available.</p>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock content %}

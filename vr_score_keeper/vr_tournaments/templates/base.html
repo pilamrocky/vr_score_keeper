@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
     <head>
@@ -10,41 +11,23 @@
               href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css" />
         <script src="https://kit.fontawesome.com/b90cfea9ff.js"
                 crossorigin="anonymous"></script>
-        {% load static %}
         <link rel="manifest" href="{% static 'manifest.json' %}" />
         <link rel="shortcut icon"
               type="image/png"
               href="{% static 'img/icons/favicon.ico' %}" />
+        <link rel="stylesheet" href="{% static 'css/style.css' %}" />
         <style>
-            .navbar-brand .navbar-item .vr-title {
-                font-weight: 700;
-                /* Bold */
-                /* Using is-family-sans-serif class for Bulma's default sans-serif font stack */
-                color: #55acee;
-                /* A vibrant blue, good for dark themes. Adjust if needed. */
-                text-shadow: 0 0 1px rgba(85, 172, 238, 0.7),
-                    /* Subtle glow effect */
-                    0 0 8px rgba(85, 172, 238, 0.5);
-                letter-spacing: 0.04em;
-                /* Adds a bit of spacing between letters */
-                transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
-                /* Smooth hover transition */
-                line-height: 1.2;
-                /* Ensures good vertical spacing, especially if text wraps */
-                /* The font size (e.g., is-size-3) will be applied directly as a class on the h1 element */
+            .vr-title {
+                background: linear-gradient(135deg, #00d1b2 0%, #3e8ed0 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                text-shadow: 0 0 10px rgba(0, 209, 178, 0.1);
+                font-weight: 800 !important;
+                letter-spacing: 0.02em;
+                transition: filter 0.3s ease;
             }
-
-            .navbar-brand .navbar-item:hover .vr-title {
-                color: #7dc0ff;
-                /* Brighter blue on hover */
-                text-shadow: 0 0 1px rgba(125, 192, 255, 0.9),
-                    /* Enhanced glow on hover */
-                    0 0 10px rgba(125, 192, 255, 0.7);
-            }
-
-            /* Ensure the navbar-brand anchor itself doesn't have default text decoration if not desired */
-            .navbar-brand>a.navbar-item {
-                text-decoration: none;
+            .navbar-item:hover .vr-title {
+                filter: brightness(1.2) drop-shadow(0 0 4px rgba(0, 209, 178, 0.4));
             }
         </style>
     </head>
