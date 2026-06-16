@@ -14,7 +14,7 @@
               <div class="level is-mobile mb-4 pt-4">
                 <div class="level-left">
                   <div class="level-item">
-                    <p class="title is-4 m-0" style="background: linear-gradient(90deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ tournament.name }}</p>
+                    <p class="title is-4 m-0" style="background: linear-gradient(90deg, #fff 0%, var(--text-muted) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">{{ tournament.name }}</p>
                   </div>
                 </div>
                 <div class="level-right">
@@ -34,7 +34,7 @@
               <div class="players-progress mt-4 mb-2">
                 {% for player, score in player_scores %}
                   <div class="mb-4">
-                    <div class="is-flex is-justify-content-between is-align-items-center mb-1">
+                    <div class="is-flex is-justify-content-space-between is-align-items-center mb-1">
                       <span class="has-text-weight-bold is-size-5">{{ player.name }}</span>
                       <span class="has-text-weight-bold is-size-5 {% if score >= tournament.points_to_win %}has-text-success{% else %}has-text-info{% endif %}">
                         {{ score }} <span class="is-size-7 has-text-grey-light">/ {{ tournament.points_to_win }} pts</span>
